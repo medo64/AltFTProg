@@ -1,0 +1,14 @@
+/bin/
+/build/
+/dist/
+/research/
+
+**/bin/
+**/obj/
+**/.idea/
+**/.vs/
+**/*.csproj.user
+**/*.DotSettings.user
+**/BenchmarkDotNet.Artifacts
+
+.nuget.key
