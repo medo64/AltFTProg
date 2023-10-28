@@ -583,9 +583,10 @@ internal class FtdiDevice {
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            try {
-                NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
+            var openRes = NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
+            if (openRes < 0) { throw new InvalidOperationException("ftdi_usb_open_dev failed with error code " + openRes.ToString() + "."); }
 
+            try {
                 var eeprom = new byte[4096];
                 var eepromFullLen = NativeMethods.ftdi_read_eeprom_getsize(ftdi, eeprom, eeprom.Length);
                 if (eepromFullLen < 0) { throw new InvalidOperationException("ftdi_read_eeprom failed with error code " + eepromFullLen.ToString()); }
@@ -626,9 +627,10 @@ internal class FtdiDevice {
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            try {
-                NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
+            var openRes = NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
+            if (openRes < 0) { throw new InvalidOperationException("ftdi_usb_open_dev failed with error code " + openRes.ToString() + "."); }
 
+            try {
                 var result = NativeMethods.ftdi_write_eeprom(ftdi, eepromBytes);
                 if (result < 0) { throw new InvalidOperationException("ftdi_write_eeprom failed with error code " + result.ToString()); }
             } finally {
@@ -781,11 +783,8 @@ internal class FtdiDevice {
                 var deviceStruct = (NativeMethods.ftdi_device_list)Marshal.PtrToStructure(currDevice, typeof(NativeMethods.ftdi_device_list))!;
 
                 var device = new FtdiDevice(deviceStruct.dev);
-                var eepromBytes = device.GetEepromBytes();
-                if (eepromBytes.Length < 128) { continue; }  // skip devices with EEPROM smaller than 128 bytes (no such device, but just in case)
-                if (eepromBytes[7] != 0x06) { continue; }  // skip non-FT232H devices; this will load EEPROM data - ok for now
-
                 devices.Add(device);
+
                 currDevice = deviceStruct.next;
             }
 

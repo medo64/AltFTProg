@@ -47,7 +47,11 @@ internal static class App {
         }
 
         foreach (var device in devices) {
-            Console.WriteLine("FTDI Device (" + device.InnerSerial + ")");
+            if (string.IsNullOrEmpty(device.UsbSerial)) {
+                Console.WriteLine("FTDI Device (no serial number)");
+            } else {
+                Console.WriteLine("FTDI Device (" + device.UsbSerial + ")");
+            }
             if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
         }
     }
