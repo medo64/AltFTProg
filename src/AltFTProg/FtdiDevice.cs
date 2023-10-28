@@ -579,11 +579,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <param name="includeExtras">Include extra EEPROM data.</param>
     public byte[] GetEepromBytes(bool includeExtras) {
-        var ftdi = Marshal.AllocHGlobal(4096);  // more than enough bytes for ftdi_context struct (112 bytes)
-        try {
-            var initRes = NativeMethods.ftdi_init(ftdi);
-            if (initRes < 0) { throw new InvalidOperationException("ftdi_init failed with error code " + initRes.ToString()); }
+        var ftdi = NativeMethods.ftdi_new();
+        if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
+        try {
             try {
                 NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
 
@@ -623,11 +622,9 @@ internal class FtdiDevice {
     public void SaveChanges() {
         var eepromBytes = GetNewEepromBytes();
 
-        var ftdi = Marshal.AllocHGlobal(4096);  // more than enough bytes for ftdi_context struct (112 bytes)
+        var ftdi = NativeMethods.ftdi_new();
+        if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
         try {
-            var initRes = NativeMethods.ftdi_init(ftdi);
-            if (initRes < 0) { throw new InvalidOperationException("ftdi_init failed with error code " + initRes.ToString()); }
-
             try {
                 NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
 
@@ -643,11 +640,10 @@ internal class FtdiDevice {
 
 
     private static void GetUsbStrings(IntPtr usbDeviceHandle, out string manufacturer, out string description, out string serial) {
-        var ftdi = Marshal.AllocHGlobal(4096);  // more than enough bytes for ftdi_context struct (112 bytes)
-        try {
-            var initRes = NativeMethods.ftdi_init(ftdi);
-            if (initRes < 0) { throw new InvalidOperationException("ftdi_init failed with error code " + initRes.ToString()); }
+        var ftdi = NativeMethods.ftdi_new();
+        if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
+        try {
             var sbManufacturer = new StringBuilder(256);
             var sbDescription = new StringBuilder(256);
             var sbSerial = new StringBuilder(256);
@@ -768,15 +764,14 @@ internal class FtdiDevice {
     /// Returns collection of FTDI USB devices.
     /// </summary>
     public static IReadOnlyCollection<FtdiDevice> GetDevices() {
-        var ftdi = Marshal.AllocHGlobal(4096);  // more than enough bytes for ftdi_context struct (112 bytes)
+        var ftdi = NativeMethods.ftdi_new();
+        if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
+
         var deviceList = IntPtr.Zero;
 
         try {
-            var initRes = NativeMethods.ftdi_init(ftdi);
-            if (initRes < 0) { throw new InvalidOperationException("ftdi_init failed with error code " + initRes.ToString()); }
-
             var findRes = NativeMethods.ftdi_usb_find_all(ftdi, ref deviceList, 0x0403, 0x6001);
-            if (findRes < 0) { throw new InvalidOperationException("ftdi_usb_find_all with error code " + initRes.ToString()); }
+            if (findRes < 0) { throw new InvalidOperationException("ftdi_usb_find_all with error code " + findRes.ToString() + "."); }
 
             var devices = new List<FtdiDevice>();
 
@@ -820,8 +815,7 @@ internal class FtdiDevice {
         );
 
         [DllImport("libftdi")]
-        public static extern int ftdi_init(
-            IntPtr ftdi
+        public static extern IntPtr ftdi_new(
         );
 
         [DllImport("libftdi")]
