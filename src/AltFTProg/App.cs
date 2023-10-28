@@ -57,6 +57,7 @@ internal static class App {
     }
 
     private static void WriteDeviceDetails(FtdiDevice device, bool includeEepromExtras) {
+        Console.WriteLine("  Chip type ...........: " + GetChipTypeText(device.ChipType));
         Console.WriteLine("  Manufacturer ........: " + device.Manufacturer);
         Console.WriteLine("  Product .............: " + device.Product);
         Console.WriteLine("  Serial ..............: " + device.Serial);
@@ -104,6 +105,19 @@ internal static class App {
             }
             Console.WriteLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
         }
+    }
+
+    private static string GetChipTypeText(FtdiDeviceChipType type) {
+        return type switch {
+            FtdiDeviceChipType.FtdiAM => "AM",
+            FtdiDeviceChipType.FtdiBM => "BM",
+            FtdiDeviceChipType.Ftdi2232C => "2232C",
+            FtdiDeviceChipType.FtdiR => "R",
+            FtdiDeviceChipType.Ftdi2232H => "2232H",
+            FtdiDeviceChipType.Ftdi4232H => "4232H",
+            FtdiDeviceChipType.Ftdi232H => "232H",
+            _ => "(" + ((int)type).ToString() + ")",
+        };
     }
 
     private static string GetPinText(FtdiDevicePinFunction function) {
