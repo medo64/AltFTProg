@@ -19,6 +19,7 @@ internal class FtdiDevice {
     private readonly IntPtr UsbDeviceHandle;
     private byte[]? EepromBytes;
 
+
     private string? _usbManufacturer;
     /// <summary>
     /// Gets USB device manufacturer name.
@@ -57,35 +58,75 @@ internal class FtdiDevice {
 
 
     /// <summary>
-    /// Gets device manufacturer name.
+    /// Gets/sets device manufacturer name.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Manufacturer {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out var manufacturer, out _, out _);
             return manufacturer;
         }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            GetEepromStrings(EepromBytes, out _, out var product, out var serial);
+            try {
+                SetEepromStrings(EepromBytes, value, product, serial);
+                IsChecksumValid = true;  // fixup checksum
+            } catch (InvalidOperationException ex) {
+                throw new ArgumentOutOfRangeException("Combined length of manufacturer, product, and serial USB string can be up to 48 characters.", ex);
+            }
+        }
     }
 
     /// <summary>
-    /// Gets device product name.
+    /// Gets/sets device product name.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Product {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out _, out var product, out _);
             return product;
         }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            GetEepromStrings(EepromBytes, out var manufacturer, out _, out var serial);
+            try {
+                SetEepromStrings(EepromBytes, manufacturer, value, serial);
+                IsChecksumValid = true;  // fixup checksum
+            } catch (InvalidOperationException ex) {
+                throw new ArgumentOutOfRangeException("Combined length of manufacturer, product, and serial USB string can be up to 48 characters.", ex);
+            }
+        }
     }
 
     /// <summary>
-    /// Gets device serial number.
+    /// Gets/sets device serial number.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Serial {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out _, out _, out var serial);
             return serial;
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (Encoding.Unicode.GetBytes(value).Length > 30) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
+            GetEepromStrings(EepromBytes, out var manufacturer, out var product, out _);
+            try {
+                SetEepromStrings(EepromBytes, manufacturer, product, value);
+                IsChecksumValid = true;  // fixup checksum
+            } catch (InvalidOperationException ex) {
+                throw new ArgumentOutOfRangeException("Combined length of manufacturer, product, and serial USB string can be up to 48 characters.", ex);
+            }
         }
     }
 
@@ -580,6 +621,52 @@ internal class FtdiDevice {
         var stringBytes = new byte[length - 2];
         Buffer.BlockCopy(eepromBytes, offset + 2, stringBytes, 0, stringBytes.Length);
         return Encoding.Unicode.GetString(stringBytes);
+    }
+
+    private static void SetEepromStrings(byte[] eepromBytes, string manufacturer, string product, string serial) {
+        var manufacturerBytes = Encoding.Unicode.GetBytes(manufacturer);
+        var productBytes = Encoding.Unicode.GetBytes(product);
+        var serialBytes = Encoding.Unicode.GetBytes(serial);
+
+        var lenManufacturer = manufacturerBytes.Length + 2;
+        var lenProduct = productBytes.Length + 2;
+        var lenSerial = serialBytes.Length + 2;
+
+        var offsetFirst = eepromBytes[0x0E] & 0x7F;
+        var offsetManufacturer = offsetFirst;
+        var offsetProduct = offsetManufacturer + lenManufacturer;
+        var offsetSerial = offsetProduct + lenProduct;
+        var offsetLast = offsetSerial + lenSerial;
+        if (offsetLast > 126) { throw new InvalidOperationException("Not enough memory to write USB strings."); }
+
+        eepromBytes[0x0E] = (byte)(0x80 | offsetManufacturer);
+        eepromBytes[0x0F] = (byte)(lenManufacturer);
+        eepromBytes[0x10] = (byte)(0x80 | offsetProduct);
+        eepromBytes[0x11] = (byte)(lenProduct);
+        eepromBytes[0x12] = (byte)(0x80 | offsetSerial);
+        eepromBytes[0x13] = (byte)(lenSerial);
+
+        eepromBytes[offsetManufacturer + 0] = (byte)lenManufacturer;
+        eepromBytes[offsetManufacturer + 1] = 0x03;
+        for (var i = 0; i < manufacturerBytes.Length; i++) {
+            eepromBytes[offsetManufacturer + 2 + i] = manufacturerBytes[i];
+        }
+
+        eepromBytes[offsetProduct + 0] = (byte)lenProduct;
+        eepromBytes[offsetProduct + 1] = 0x03;
+        for (var i = 0; i < productBytes.Length; i++) {
+            eepromBytes[offsetProduct + 2 + i] = productBytes[i];
+        }
+
+        eepromBytes[offsetSerial + 0] = (byte)lenSerial;
+        eepromBytes[offsetSerial + 1] = 0x03;
+        for (var i = 0; i < serialBytes.Length; i++) {
+            eepromBytes[offsetSerial + 2 + i] = serialBytes[i];
+        }
+
+        for (var i = offsetLast; i < 126; i++) {
+            eepromBytes[i] = 0;
+        }
     }
 
     private static ushort GetChecksum(byte[] eeprom, int eepromSize) {
