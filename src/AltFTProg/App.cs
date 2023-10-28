@@ -57,10 +57,12 @@ internal static class App {
     }
 
     private static void WriteDeviceDetails(FtdiDevice device, bool includeEepromExtras) {
+        Console.WriteLine("  Manufacturer ........: " + device.UsbManufacturer);
+        Console.WriteLine("  Product .............: " + device.UsbProduct);
+        Console.WriteLine("  Serial ..............: " + device.UsbSerial);
+
         Console.WriteLine("  Chip type ...........: " + GetChipTypeText(device.ChipType));
-        Console.WriteLine("  Manufacturer ........: " + device.Manufacturer);
-        Console.WriteLine("  Product .............: " + device.Product);
-        Console.WriteLine("  Serial ..............: " + device.Serial);
+        Console.WriteLine("  EEPROM size .........: " + device.EepromSize.ToString());
 
         Console.WriteLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
         Console.WriteLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
