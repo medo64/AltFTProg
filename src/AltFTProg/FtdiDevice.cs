@@ -601,7 +601,7 @@ internal class FtdiDevice {
                 NativeMethods.ftdi_usb_close(ftdi);
             }
         } finally {
-            NativeMethods.ftdi_deinit(ftdi);
+            NativeMethods.ftdi_free(ftdi);
         }
     }
 
@@ -637,7 +637,7 @@ internal class FtdiDevice {
                 NativeMethods.ftdi_usb_close(ftdi);
             }
         } finally {
-            NativeMethods.ftdi_deinit(ftdi);
+            NativeMethods.ftdi_free(ftdi);
         }
     }
 
@@ -660,7 +660,7 @@ internal class FtdiDevice {
             description = sbDescription.ToString();
             serial = sbSerial.ToString();
         } finally {
-            NativeMethods.ftdi_deinit(ftdi);
+            NativeMethods.ftdi_free(ftdi);
         }
     }
 
@@ -795,7 +795,7 @@ internal class FtdiDevice {
 
             return (devices.AsReadOnly());
         } finally {
-            NativeMethods.ftdi_deinit(ftdi);
+            NativeMethods.ftdi_free(ftdi);
             if (deviceList != IntPtr.Zero) {
                 NativeMethods.ftdi_list_free(ref deviceList);
             }
@@ -815,7 +815,7 @@ internal class FtdiDevice {
 
 
         [DllImport("libftdi")]
-        public static extern void ftdi_deinit(
+        public static extern void ftdi_free(
             IntPtr ftdi
         );
 
