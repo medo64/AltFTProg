@@ -2,6 +2,7 @@ namespace AltFTProg;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -583,13 +584,12 @@ internal class FtdiDevice {
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            var openRes = NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
-            if (openRes < 0) { throw new InvalidOperationException("ftdi_usb_open_dev failed with error code " + openRes.ToString() + "."); }
+            ThrowIfError(ftdi, "ftdi_usb_open_dev", NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
                 var eeprom = new byte[4096];
                 var eepromFullLen = NativeMethods.ftdi_read_eeprom_getsize(ftdi, eeprom, eeprom.Length);
-                if (eepromFullLen < 0) { throw new InvalidOperationException("ftdi_read_eeprom failed with error code " + eepromFullLen.ToString()); }
+                ThrowIfError(ftdi, "ftdi_read_eeprom", eepromFullLen);
 
                 var eepromLen = 128;  // ftdi_read_eeprom_getsize returns more data than the actual EEPROM size; assume 128 bytes
 
@@ -627,12 +627,10 @@ internal class FtdiDevice {
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            var openRes = NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
-            if (openRes < 0) { throw new InvalidOperationException("ftdi_usb_open_dev failed with error code " + openRes.ToString() + "."); }
+            ThrowIfError(ftdi, "ftdi_usb_open_dev", NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
-                var result = NativeMethods.ftdi_write_eeprom(ftdi, eepromBytes);
-                if (result < 0) { throw new InvalidOperationException("ftdi_write_eeprom failed with error code " + result.ToString()); }
+                ThrowIfError(ftdi, "ftdi_write_eeprom", NativeMethods.ftdi_write_eeprom(ftdi, eepromBytes));
             } finally {
                 NativeMethods.ftdi_usb_close(ftdi);
             }
@@ -642,6 +640,19 @@ internal class FtdiDevice {
     }
 
 
+    [StackTraceHidden()]
+    private static void ThrowIfError(IntPtr ftdi, string errorSource, int errorCode) {
+        if (errorCode < 0) {
+            var errorPointer = NativeMethods.ftdi_get_error_string(ftdi);
+            if (errorPointer == IntPtr.Zero) {
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ".");
+            } else {
+                var errorText = Marshal.PtrToStringUTF8(errorPointer);
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ": " + errorText);
+            }
+        }
+    }
+
     private static void GetUsbStrings(IntPtr usbDeviceHandle, out string manufacturer, out string description, out string serial) {
         var ftdi = NativeMethods.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
@@ -650,10 +661,12 @@ internal class FtdiDevice {
             var sbManufacturer = new StringBuilder(256);
             var sbDescription = new StringBuilder(256);
             var sbSerial = new StringBuilder(256);
-            NativeMethods.ftdi_usb_get_strings(ftdi, usbDeviceHandle,
+
+            var errorCode = NativeMethods.ftdi_usb_get_strings(ftdi, usbDeviceHandle,
                 sbManufacturer, sbManufacturer.Capacity,
                 sbDescription, sbDescription.Capacity,
                 sbSerial, sbSerial.Capacity);
+            ThrowIfError(ftdi, "ftdi_usb_get_strings", errorCode);
 
             manufacturer = sbManufacturer.ToString();
             description = sbDescription.ToString();
@@ -774,7 +787,7 @@ internal class FtdiDevice {
 
         try {
             var findRes = NativeMethods.ftdi_usb_find_all(ftdi, ref deviceList, 0x0403, 0x6001);
-            if (findRes < 0) { throw new InvalidOperationException("ftdi_usb_find_all with error code " + findRes.ToString() + "."); }
+            ThrowIfError(ftdi, "ftdi_usb_find_all", findRes);
 
             var devices = new List<FtdiDevice>();
 
@@ -823,11 +836,6 @@ internal class FtdiDevice {
             ref IntPtr devlist
         );
 
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_read_eeprom(
-            IntPtr ftdi,
-            [Out] byte[] eeprom
-        );
 
         [DllImport("libftdi.so")]
         public static extern int ftdi_read_eeprom_getsize(
@@ -871,6 +879,11 @@ internal class FtdiDevice {
         public static extern int ftdi_usb_open_dev(
             IntPtr ftdi,
             IntPtr dev
+        );
+
+        [DllImport("libftdi.so")]
+        public static extern IntPtr ftdi_get_error_string(
+            IntPtr ftdi
         );
     }
 }
