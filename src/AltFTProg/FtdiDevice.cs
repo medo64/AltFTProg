@@ -182,10 +182,10 @@ internal class FtdiDevice {
     /// <summary>
     /// Gets device chip type.
     /// </summary>
-    public FtdiChipType ChipType {
+    public FtdiDeviceChipType ChipType {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiChipType)EepromBytes[7];
+            return (FtdiDeviceChipType)EepromBytes[7];
         }
     }
 
@@ -431,10 +431,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
-    public FtdiPinFunction CBus0Function {
+    public FtdiDevicePinFunction CBus0Function {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiPinFunction)(EepromBytes[20] & 0x0F);
+            return (FtdiDevicePinFunction)(EepromBytes[20] & 0x0F);
         }
         set {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
@@ -451,10 +451,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
-    public FtdiPinFunction CBus1Function {
+    public FtdiDevicePinFunction CBus1Function {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiPinFunction)(EepromBytes[20] >> 4);
+            return (FtdiDevicePinFunction)(EepromBytes[20] >> 4);
         }
         set {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
@@ -471,10 +471,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
-    public FtdiPinFunction CBus2Function {
+    public FtdiDevicePinFunction CBus2Function {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiPinFunction)(EepromBytes[21] & 0x0F);
+            return (FtdiDevicePinFunction)(EepromBytes[21] & 0x0F);
         }
         set {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
@@ -491,10 +491,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
-    public FtdiPinFunction CBus3Function {
+    public FtdiDevicePinFunction CBus3Function {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiPinFunction)(EepromBytes[21] >> 4);
+            return (FtdiDevicePinFunction)(EepromBytes[21] >> 4);
         }
         set {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
@@ -511,10 +511,10 @@ internal class FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
-    public FtdiPinFunction CBus4Function {
+    public FtdiDevicePinFunction CBus4Function {
         get {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiPinFunction)(EepromBytes[22] & 0x0F);
+            return (FtdiDevicePinFunction)(EepromBytes[22] & 0x0F);
         }
         set {
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
@@ -965,7 +965,7 @@ internal class FtdiDevice {
 /// <summary>
 /// FTDI chip type.
 /// </summary>
-public enum FtdiChipType {
+public enum FtdiDeviceChipType {
     /// <summary>
     /// FTDI AM chip type.
     /// </summary>
@@ -1007,7 +1007,7 @@ public enum FtdiChipType {
 /// <summary>
 /// FTDI pin function.
 /// </summary>
-public enum FtdiPinFunction {
+public enum FtdiDevicePinFunction {
     /// <summary>
     /// TXDEN function.
     /// </summary>

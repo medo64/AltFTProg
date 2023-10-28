@@ -48,74 +48,76 @@ internal static class App {
 
         foreach (var device in devices) {
             Console.WriteLine("FTDI Device (" + device.InnerSerial + ")");
-            if (isVerbose) {
-                Console.WriteLine("  Manufacturer ........: " + device.Manufacturer);
-                Console.WriteLine("  Product .............: " + device.Product);
-                Console.WriteLine("  Serial ..............: " + device.Serial);
-
-                Console.WriteLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
-                Console.WriteLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
-                Console.WriteLine("  Remote wakeup .......: " + (device.IsRemoteWakeupEnabled ? "Enabled" : "Disabled"));
-                Console.WriteLine("  Power source ........: " + (device.IsSelfPowered ? "Self-powered" : "Bus-powered"));
-                Console.WriteLine("  Maximum power .......: " + device.MaxPower.ToString() + " mA");
-                Console.WriteLine("  IO during suspend ...: " + (device.IsIOPulledDownDuringSuspend ? "Pulled-down" : "Floating"));
-                Console.WriteLine("  Serial number enabled: " + (device.IsSerialNumberEnabled ? "Yes" : "No"));
-                Console.WriteLine("  TXD inverted ........: " + (device.IsTxdInverted ? "Yes" : "No"));
-                Console.WriteLine("  RXD inverted ........: " + (device.IsRxdInverted ? "Yes" : "No"));
-                Console.WriteLine("  RTS inverted ........: " + (device.IsRtsInverted ? "Yes" : "No"));
-                Console.WriteLine("  CTS inverted ........: " + (device.IsCtsInverted ? "Yes" : "No"));
-                Console.WriteLine("  DTR inverted ........: " + (device.IsDtrInverted ? "Yes" : "No"));
-                Console.WriteLine("  DSR inverted ........: " + (device.IsDsrInverted ? "Yes" : "No"));
-                Console.WriteLine("  DCD inverted ........: " + (device.IsDcdInverted ? "Yes" : "No"));
-                Console.WriteLine("  RI inverted .........: " + (device.IsRiInverted ? "Yes" : "No"));
-                Console.WriteLine("  CBUS0 function ......: " + GetPinText(device.CBus0Function));
-                Console.WriteLine("  CBUS1 function ......: " + GetPinText(device.CBus1Function));
-                Console.WriteLine("  CBUS2 function ......: " + GetPinText(device.CBus2Function));
-                Console.WriteLine("  CBUS3 function ......: " + GetPinText(device.CBus3Function));
-                Console.WriteLine("  CBUS4 function ......: " + GetPinText(device.CBus4Function));
-                Console.WriteLine("  High-current IO .....: " + (device.IsHighCurrentIO ? "Yes" : "No"));
-                Console.WriteLine("  Checksum ............: " + (device.IsChecksumValid ? "Valid" : "Invalid"));
-
-                Console.WriteLine("  EEPROM");
-                var eepromBytes = device.GetEepromBytes(includeExtras: true);
-                for (var i = 0; i < eepromBytes.Length; i += 16) {
-                    var sbHex = new StringBuilder();
-                    var sbAscii = new StringBuilder();
-
-                    sbHex.Append(i.ToString("X2") + ": ");
-                    for (var j = 0; j < 16; j++) {
-                        if (j == 8) {
-                            sbHex.Append(' ');
-                            sbAscii.Append(' ');
-                        }
-
-                        var b = eepromBytes[i + j];
-
-                        sbHex.Append(b.ToString("X2") + " ");
-                        sbAscii.Append((b < 32 || b > 126) ? '·' : (char)b);
-                    }
-                    Console.WriteLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
-                }
-            }
+            if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
         }
     }
 
-    private static string GetPinText(FtdiPinFunction function) {
+    private static void WriteDeviceDetails(FtdiDevice device, bool includeEepromExtras) {
+        Console.WriteLine("  Manufacturer ........: " + device.Manufacturer);
+        Console.WriteLine("  Product .............: " + device.Product);
+        Console.WriteLine("  Serial ..............: " + device.Serial);
+
+        Console.WriteLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
+        Console.WriteLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
+        Console.WriteLine("  Remote wakeup .......: " + (device.IsRemoteWakeupEnabled ? "Enabled" : "Disabled"));
+        Console.WriteLine("  Power source ........: " + (device.IsSelfPowered ? "Self-powered" : "Bus-powered"));
+        Console.WriteLine("  Maximum power .......: " + device.MaxPower.ToString() + " mA");
+        Console.WriteLine("  IO during suspend ...: " + (device.IsIOPulledDownDuringSuspend ? "Pulled-down" : "Floating"));
+        Console.WriteLine("  Serial number enabled: " + (device.IsSerialNumberEnabled ? "Yes" : "No"));
+        Console.WriteLine("  TXD inverted ........: " + (device.IsTxdInverted ? "Yes" : "No"));
+        Console.WriteLine("  RXD inverted ........: " + (device.IsRxdInverted ? "Yes" : "No"));
+        Console.WriteLine("  RTS inverted ........: " + (device.IsRtsInverted ? "Yes" : "No"));
+        Console.WriteLine("  CTS inverted ........: " + (device.IsCtsInverted ? "Yes" : "No"));
+        Console.WriteLine("  DTR inverted ........: " + (device.IsDtrInverted ? "Yes" : "No"));
+        Console.WriteLine("  DSR inverted ........: " + (device.IsDsrInverted ? "Yes" : "No"));
+        Console.WriteLine("  DCD inverted ........: " + (device.IsDcdInverted ? "Yes" : "No"));
+        Console.WriteLine("  RI inverted .........: " + (device.IsRiInverted ? "Yes" : "No"));
+        Console.WriteLine("  CBUS0 function ......: " + GetPinText(device.CBus0Function));
+        Console.WriteLine("  CBUS1 function ......: " + GetPinText(device.CBus1Function));
+        Console.WriteLine("  CBUS2 function ......: " + GetPinText(device.CBus2Function));
+        Console.WriteLine("  CBUS3 function ......: " + GetPinText(device.CBus3Function));
+        Console.WriteLine("  CBUS4 function ......: " + GetPinText(device.CBus4Function));
+        Console.WriteLine("  High-current IO .....: " + (device.IsHighCurrentIO ? "Yes" : "No"));
+        Console.WriteLine("  Checksum ............: " + (device.IsChecksumValid ? "Valid" : "Invalid"));
+
+        Console.WriteLine("  EEPROM");
+        var eepromBytes = device.GetEepromBytes(includeExtras: true);
+        for (var i = 0; i < eepromBytes.Length; i += 16) {
+            var sbHex = new StringBuilder();
+            var sbAscii = new StringBuilder();
+
+            sbHex.Append(i.ToString("X2") + ": ");
+            for (var j = 0; j < 16; j++) {
+                if (j == 8) {
+                    sbHex.Append(' ');
+                    sbAscii.Append(' ');
+                }
+
+                var b = eepromBytes[i + j];
+
+                sbHex.Append(b.ToString("X2") + " ");
+                sbAscii.Append((b < 32 || b > 126) ? '·' : (char)b);
+            }
+            Console.WriteLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
+        }
+    }
+
+    private static string GetPinText(FtdiDevicePinFunction function) {
         return function switch {
-            FtdiPinFunction.TxdEnable => "TXDEN",
-            FtdiPinFunction.PowerEnable => "PWREN#",
-            FtdiPinFunction.RxLed => "RXLED#",
-            FtdiPinFunction.TxLed => "TXLED#",
-            FtdiPinFunction.TxRxLed => "TX&RXLED#",
-            FtdiPinFunction.Sleep => "SLEEP#",
-            FtdiPinFunction.Clock48Mhz => "CLK48",
-            FtdiPinFunction.Clock24Mhz => "CLK24",
-            FtdiPinFunction.Clock12Mhz => "CLK12",
-            FtdiPinFunction.Clock6Mhz => "CLK6",
-            FtdiPinFunction.IOMode => "IOMODE",
-            FtdiPinFunction.BitbangWrite => "WR#",
-            FtdiPinFunction.BitbangRead => "RD#",
-            FtdiPinFunction.RxF => "RXF#",
+            FtdiDevicePinFunction.TxdEnable => "TXDEN",
+            FtdiDevicePinFunction.PowerEnable => "PWREN#",
+            FtdiDevicePinFunction.RxLed => "RXLED#",
+            FtdiDevicePinFunction.TxLed => "TXLED#",
+            FtdiDevicePinFunction.TxRxLed => "TX&RXLED#",
+            FtdiDevicePinFunction.Sleep => "SLEEP#",
+            FtdiDevicePinFunction.Clock48Mhz => "CLK48",
+            FtdiDevicePinFunction.Clock24Mhz => "CLK24",
+            FtdiDevicePinFunction.Clock12Mhz => "CLK12",
+            FtdiDevicePinFunction.Clock6Mhz => "CLK6",
+            FtdiDevicePinFunction.IOMode => "IOMODE",
+            FtdiDevicePinFunction.BitbangWrite => "WR#",
+            FtdiDevicePinFunction.BitbangRead => "RD#",
+            FtdiDevicePinFunction.RxF => "RXF#",
             _ => "(" + ((int)function).ToString() + ")",
         };
     }
