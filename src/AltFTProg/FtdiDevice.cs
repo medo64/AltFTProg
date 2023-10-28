@@ -624,6 +624,7 @@ internal class FtdiDevice {
 
         var ftdi = NativeMethods.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
+
         try {
             try {
                 NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle);
@@ -809,40 +810,40 @@ internal class FtdiDevice {
         };
 
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern void ftdi_free(
             IntPtr ftdi
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern IntPtr ftdi_new(
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern void ftdi_list_free(
             ref IntPtr devlist
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_read_eeprom(
             IntPtr ftdi,
             [Out] byte[] eeprom
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_read_eeprom_getsize(
             IntPtr ftdi,
             [Out] byte[] eeprom,
             int maxsize
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_write_eeprom(
             IntPtr ftdi,
             byte[] eeprom
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_usb_find_all(
             IntPtr ftdi,
             ref IntPtr devlist,
@@ -850,12 +851,12 @@ internal class FtdiDevice {
             int product
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_usb_close(
             IntPtr ftdi
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_usb_get_strings(
             IntPtr ftdi,
             IntPtr dev,
@@ -867,12 +868,11 @@ internal class FtdiDevice {
             int serial_len
         );
 
-        [DllImport("libftdi")]
+        [DllImport("libftdi.so")]
         public static extern int ftdi_usb_open_dev(
             IntPtr ftdi,
             IntPtr dev
         );
-
     }
 }
 
