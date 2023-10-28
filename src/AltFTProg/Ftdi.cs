@@ -277,33 +277,6 @@ internal class FtdiDevice {
         }
     }
 
-    /// <summary>
-    /// Gets/sets if USB 1.1 interface is used.
-    /// TODO: Check bytes 12 and 13
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsUsb11 {
-        get {
-            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (EepromBytes[10] & 0x10) != 0;
-        }
-        set {
-            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[10] = (byte)((EepromBytes[10] & ~0x10) | (value ? 0x10 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-    /// <summary>
-    /// Gets/sets if USB 2.0 interface is used.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsUsb20 {
-        get { return !IsUsb11; }
-        set { IsUsb11 = !value; }
-    }
-
 
     /// <summary>
     /// Gets/sets if TXD is inverted.

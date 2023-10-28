@@ -20,7 +20,6 @@ internal static class App {
             Console.WriteLine("  Maximum power .......: " + dev.MaxPower.ToString() + " mA");
             Console.WriteLine("  IO during suspend ...: " + (dev.IsIOPulledDownDuringSuspend ? "Pulled-down" : "Floating"));
             Console.WriteLine("  Serial number enabled: " + (dev.IsSerialNumberEnabled ? "Yes" : "No"));
-            Console.WriteLine("  USB .................: " + (dev.IsUsb11 ? "1.1" : "2.0"));
             Console.WriteLine("  TXD inverted ........: " + (dev.IsTxdInverted ? "Yes" : "No"));
             Console.WriteLine("  RXD inverted ........: " + (dev.IsRxdInverted ? "Yes" : "No"));
             Console.WriteLine("  RTS inverted ........: " + (dev.IsRtsInverted ? "Yes" : "No"));
