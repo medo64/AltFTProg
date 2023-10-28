@@ -1,6 +1,5 @@
 ﻿namespace AltFTProg;
 using System;
-using System.Diagnostics;
 using System.Text;
 
 internal static class App {
@@ -8,7 +7,7 @@ internal static class App {
     internal static void Main() {
         var devs = FtdiDevice.GetDevices();
         foreach (var dev in devs) {
-            Console.WriteLine("FTDI Device");
+            Console.WriteLine("FTDI Device (" + dev.InnerSerial + ")");
             Console.WriteLine("  Manufacturer ........: " + dev.Manufacturer);
             Console.WriteLine("  Product .............: " + dev.Product);
             Console.WriteLine("  Serial ..............: " + dev.Serial);

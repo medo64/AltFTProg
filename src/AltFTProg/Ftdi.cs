@@ -56,6 +56,17 @@ internal class FtdiDevice {
         }
     }
 
+    /// <summary>
+    /// Gets internal serial number of FTDI device, if one is found.
+    /// </summary>
+    public string? InnerSerial {
+        get {
+            var bytes = GetEepromBytes(includeExtras: true);
+            if (bytes.Length < 256) { return null; }
+            return Encoding.ASCII.GetString(bytes, 0x98, 8);
+        }
+    }
+
 
     /// <summary>
     /// Gets/sets device manufacturer name.
