@@ -13,12 +13,23 @@ using System.Text;
 /// </summary>
 internal class FtdiDevice {
 
-    private FtdiDevice(IntPtr usbDeviceHandle) {
+    private FtdiDevice(IntPtr usbDeviceHandle, FtdiDeviceChipType usbChipType) {
         UsbDeviceHandle = usbDeviceHandle;
+        UsbChipType = usbChipType;
     }
 
     private readonly IntPtr UsbDeviceHandle;
+    private readonly FtdiDeviceChipType UsbChipType;
+
     private byte[]? EepromBytes;
+
+
+    /// <summary>
+    /// Gets device chip type.
+    /// </summary>
+    public FtdiDeviceChipType ChipType {
+        get { return UsbChipType; }
+    }
 
 
     private string? _usbManufacturer;
@@ -76,11 +87,13 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Manufacturer {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out var manufacturer, out _, out _);
             return manufacturer;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             GetEepromStrings(EepromBytes, out _, out var product, out var serial);
@@ -100,11 +113,13 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Product {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out _, out var product, out _);
             return product;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             GetEepromStrings(EepromBytes, out var manufacturer, out _, out var serial);
@@ -124,11 +139,13 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Combined length of manufacturer, product, and serial USB string can be up to 48 characters.</exception>
     public string Serial {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             GetEepromStrings(EepromBytes, out _, out _, out var serial);
             return serial;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             if (Encoding.Unicode.GetBytes(value).Length > 30) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
@@ -181,26 +198,17 @@ internal class FtdiDevice {
 
 
     /// <summary>
-    /// Gets device chip type.
-    /// </summary>
-    public FtdiDeviceChipType ChipType {
-        get {
-            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
-            return (FtdiDeviceChipType)EepromBytes[7];
-        }
-    }
-
-
-    /// <summary>
     /// Gets/sets USB remote wakeup.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsRemoteWakeupEnabled {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[8] & 0x20) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value ? 0x20 : 0));
@@ -214,10 +222,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsSelfPowered {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[8] & 0x40) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[8] = (byte)((EepromBytes[8] & ~0x40) | (value ? 0x40 : 0));
@@ -241,10 +251,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Value must be between 0 and 500.</exception>
     public int MaxPower {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return EepromBytes[9] * 2;  // 2 mA unit
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             if (value is < 0 or > 500) { throw new ArgumentOutOfRangeException(nameof(value), "Value must be between 0 and 500."); }
@@ -261,10 +273,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsIOPulledDownDuringSuspend {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[10] & 0x04) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[10] = (byte)((EepromBytes[10] & ~0x04) | (value ? 0x04 : 0));
@@ -278,10 +292,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsSerialNumberEnabled {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[10] & 0x08) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[10] = (byte)((EepromBytes[10] & ~0x08) | (value ? 0x08 : 0));
@@ -296,10 +312,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsTxdInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x01) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x01) | (value ? 0x01 : 0));
@@ -313,10 +331,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsRxdInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x02) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x02) | (value ? 0x02 : 0));
@@ -330,10 +350,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsRtsInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x04) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x04) | (value ? 0x04 : 0));
@@ -347,10 +369,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsCtsInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x08) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x08) | (value ? 0x08 : 0));
@@ -364,10 +388,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsDtrInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x10) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x10) | (value ? 0x10 : 0));
@@ -381,10 +407,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsDsrInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x20) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x20) | (value ? 0x20 : 0));
@@ -398,10 +426,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsDcdInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x40) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x40) | (value ? 0x40 : 0));
@@ -415,10 +445,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsRiInverted {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[11] & 0x80) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[11] = (byte)((EepromBytes[11] & ~0x80) | (value ? 0x80 : 0));
@@ -434,10 +466,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     public FtdiDevicePinFunction CBus0Function {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (FtdiDevicePinFunction)(EepromBytes[20] & 0x0F);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
@@ -454,10 +488,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     public FtdiDevicePinFunction CBus1Function {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (FtdiDevicePinFunction)(EepromBytes[20] >> 4);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
@@ -474,10 +510,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     public FtdiDevicePinFunction CBus2Function {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (FtdiDevicePinFunction)(EepromBytes[21] & 0x0F);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
@@ -494,10 +532,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     public FtdiDevicePinFunction CBus3Function {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (FtdiDevicePinFunction)(EepromBytes[21] >> 4);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
@@ -514,10 +554,12 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     public FtdiDevicePinFunction CBus4Function {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (FtdiDevicePinFunction)(EepromBytes[22] & 0x0F);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
@@ -534,10 +576,12 @@ internal class FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool IsHighCurrentIO {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             return (EepromBytes[0] & 0x04) != 0;
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[0] = (byte)((EepromBytes[0] & ~0x04) | (value ? 0x04 : 0));
@@ -553,12 +597,14 @@ internal class FtdiDevice {
     /// <exception cref="ArgumentException">Checksum validity cannot be set to false.</exception>
     public bool IsChecksumValid {
         get {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             var eepromChecksum = (UInt16)(EepromBytes[EepromBytes.Length - 1] << 8 | EepromBytes[EepromBytes.Length - 2]);
             var checksum = GetChecksum(EepromBytes, EepromBytes.Length);
             return (eepromChecksum == checksum);
         }
         set {
+            if (ChipType != FtdiDeviceChipType.FtdiBM) { throw new InvalidOperationException("Unsupported chip type."); }
             if (value == false) { throw new ArgumentException("Checksum validity cannot be set to false.", nameof(value)); }
             if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
             var checksum = GetChecksum(EepromBytes, EepromBytes.Length);
@@ -795,7 +841,9 @@ internal class FtdiDevice {
             while (currDevice != IntPtr.Zero) {
                 var deviceStruct = (NativeMethods.ftdi_device_list)Marshal.PtrToStructure(currDevice, typeof(NativeMethods.ftdi_device_list))!;
 
-                var device = new FtdiDevice(deviceStruct.dev);
+                var ftdiStruct = (NativeMethods.ftdi_context)Marshal.PtrToStructure(ftdi, typeof(NativeMethods.ftdi_context))!;
+
+                var device = new FtdiDevice(deviceStruct.dev, (FtdiDeviceChipType)ftdiStruct.type);
                 devices.Add(device);
 
                 currDevice = deviceStruct.next;
@@ -812,6 +860,85 @@ internal class FtdiDevice {
 
 
     private static class NativeMethods {
+
+        /** FTDI chip type */
+        public enum ftdi_chip_type {
+            TYPE_AM = 0,
+            TYPE_BM = 1,
+            TYPE_2232C = 2,
+            TYPE_R = 3,
+            TYPE_2232H = 4,
+            TYPE_4232H = 5,
+            TYPE_232H = 6,
+            TYPE_230X = 7,
+        };
+
+        /** Main context structure for all libftdi functions */
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ftdi_context {
+            /* USB specific */
+            /** libusb's usb_dev_handle */
+            public IntPtr usb_dev;
+            /** usb read timeout */
+            public int usb_read_timeout;
+            /** usb write timeout */
+            public int usb_write_timeout;
+
+            // FTDI specific
+            /* FTDI chip type */
+            public ftdi_chip_type type;
+            /** baudrate */
+            public int baudrate;
+            /** bitbang mode state */
+            public byte bitbang_enabled;
+            /** pointer to read buffer for ftdi_read_data */
+            public IntPtr readbuffer;
+            /** read buffer offset */
+            public uint readbuffer_offset;
+            /** number of remaining data in internal read buffer */
+            public uint readbuffer_remaining;
+            /** read buffer chunk size */
+            public uint readbuffer_chunksize;
+            /** write buffer chunk size */
+            public uint writebuffer_chunksize;
+            /** maximum packet size. Needed for filtering modem status bytes every n packets. */
+            public uint max_packet_size;
+
+            /* FTDI FT2232C requirecments */
+            /** FT2232C interface number: 0 or 1 */
+            public int @interface;   /* 0 or 1 */
+            /** FT2232C index number: 1 or 2 */
+            public int index;       /* 1 or 2 */
+            /* Endpoints */
+            /** FT2232C end points: 1 or 2 */
+            public int in_ep;
+            public int out_ep;      /* 1 or 2 */
+
+            /** Bitbang mode. 1: (default) Normal bitbang mode, 2: FT2232C SPI bitbang mode */
+            public byte bitbang_mode;
+
+            /** EEPROM size. Default is 128 bytes for 232BM and 245BM chips */
+            public int eeprom_size;
+
+            /** String representation of last error */
+            public IntPtr error_str;           /* const char * */
+
+            /** Buffer needed for async communication */
+            public IntPtr async_usb_buffer;
+            /** Number of URB-structures we can buffer */
+            public uint async_usb_buffe_rsize;
+
+            /** Defines behavior in case a kernel module is already attached to the device */
+            public ftdi_module_detach_mode module_detach_mode;
+        };
+
+        /** Automatic loading / unloading of kernel modules */
+        public enum ftdi_module_detach_mode {
+            AUTO_DETACH_SIO_MODULE = 0,
+            DONT_DETACH_SIO_MODULE = 1,
+            AUTO_DETACH_REATACH_SIO_MODULE = 2,
+        };
+
 
         [StructLayout(LayoutKind.Sequential)]
         public struct ftdi_device_list {
@@ -928,6 +1055,11 @@ public enum FtdiDeviceChipType {
     /// FTDI 232H chip type.
     /// </summary>
     Ftdi232H = 6,
+
+    /// <summary>
+    /// FTDI 230X chip type.
+    /// </summary>
+    Ftdi230X = 7,
 };
 
 
