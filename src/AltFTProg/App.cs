@@ -29,6 +29,11 @@ internal static class App {
             Console.WriteLine("  DSR inverted ........: " + (dev.IsDsrInverted ? "Yes" : "No"));
             Console.WriteLine("  DCD inverted ........: " + (dev.IsDcdInverted ? "Yes" : "No"));
             Console.WriteLine("  RI inverted .........: " + (dev.IsRiInverted ? "Yes" : "No"));
+            Console.WriteLine("  CBUS0 function ......: " + GetPinText(dev.CBus0Function));
+            Console.WriteLine("  CBUS1 function ......: " + GetPinText(dev.CBus1Function));
+            Console.WriteLine("  CBUS2 function ......: " + GetPinText(dev.CBus2Function));
+            Console.WriteLine("  CBUS3 function ......: " + GetPinText(dev.CBus3Function));
+            Console.WriteLine("  CBUS4 function ......: " + GetPinText(dev.CBus4Function));
             Console.WriteLine("  High-current IO .....: " + (dev.IsHighCurrentIO ? "Yes" : "No"));
             Console.WriteLine("  Checksum ............: " + (dev.IsChecksumValid ? "Valid" : "Invalid"));
 
@@ -53,5 +58,25 @@ internal static class App {
                 Console.WriteLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
             }
         }
+    }
+
+    internal static string GetPinText(FtdiPinFunction function) {
+        return function switch {
+            FtdiPinFunction.TxdEnable => "TXDEN",
+            FtdiPinFunction.PowerEnable => "PWREN#",
+            FtdiPinFunction.RxLed => "RXLED#",
+            FtdiPinFunction.TxLed => "TXLED#",
+            FtdiPinFunction.TxRxLed => "TX&RXLED#",
+            FtdiPinFunction.Sleep => "SLEEP#",
+            FtdiPinFunction.Clock48Mhz => "CLK48",
+            FtdiPinFunction.Clock24Mhz => "CLK24",
+            FtdiPinFunction.Clock12Mhz => "CLK12",
+            FtdiPinFunction.Clock6Mhz => "CLK6",
+            FtdiPinFunction.IOMode => "IOMODE",
+            FtdiPinFunction.BitbangWrite => "WR#",
+            FtdiPinFunction.BitbangRead => "RD#",
+            FtdiPinFunction.RxF => "RXF#",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
     }
 }

@@ -443,6 +443,107 @@ internal class FtdiDevice {
 
 
     /// <summary>
+    /// Gets/sets function for CBUS0.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    public FtdiPinFunction CBus0Function {
+        get {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            return (FtdiPinFunction)(EepromBytes[20] & 0x0F);
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[20] = (byte)((EepromBytes[20] & 0xF0) | newValue);
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS1.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    public FtdiPinFunction CBus1Function {
+        get {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            return (FtdiPinFunction)(EepromBytes[20] >> 4);
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[20] = (byte)((EepromBytes[20] & 0x0F) | (newValue << 4));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS2.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    public FtdiPinFunction CBus2Function {
+        get {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            return (FtdiPinFunction)(EepromBytes[21] & 0x0F);
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[21] = (byte)((EepromBytes[21] & 0xF0) | newValue);
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS3.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    public FtdiPinFunction CBus3Function {
+        get {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            return (FtdiPinFunction)(EepromBytes[21] >> 4);
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[21] = (byte)((EepromBytes[21] & 0x0F) | (newValue << 4));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS4.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    public FtdiPinFunction CBus4Function {
+        get {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            return (FtdiPinFunction)(EepromBytes[22] & 0x0F);
+        }
+        set {
+            if (EepromBytes == null) { EepromBytes = GetEepromBytes(); }
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[22] = (byte)((EepromBytes[22] & 0xF0) | newValue);
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+    /// <summary>
     /// Gets/sets if high-current IO will be used.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
@@ -876,6 +977,7 @@ internal class FtdiDevice {
 }
 
 
+
 /// <summary>
 /// FTDI chip type.
 /// </summary>
@@ -913,5 +1015,82 @@ public enum FtdiChipType {
     /// <summary>
     /// FTDI 232H chip type.
     /// </summary>
-    Ftdi232H = 6
+    Ftdi232H = 6,
 };
+
+
+
+/// <summary>
+/// FTDI pin function.
+/// </summary>
+public enum FtdiPinFunction {
+    /// <summary>
+    /// TXDEN function.
+    /// </summary>
+    TxdEnable = 0,
+
+    /// <summary>
+    /// PWREN# function.
+    /// </summary>
+    PowerEnable = 1,
+
+    /// <summary>
+    /// RXLED# function.
+    /// </summary>
+    RxLed = 2,
+
+    /// <summary>
+    /// TXLED# function.
+    /// </summary>
+    TxLed = 3,
+
+    /// <summary>
+    /// TX&RXLED# function.
+    /// </summary>
+    TxRxLed = 4,
+
+    /// <summary>
+    /// SLEEP# function.
+    /// </summary>
+    Sleep = 5,
+
+    /// <summary>
+    /// CLK48 function.
+    /// </summary>
+    Clock48Mhz = 6,
+
+    /// <summary>
+    /// CLK24 function.
+    /// </summary>
+    Clock24Mhz = 7,
+
+    /// <summary>
+    /// CLK12 function.
+    /// </summary>
+    Clock12Mhz = 8,
+
+    /// <summary>
+    /// CLK6 function.
+    /// </summary>
+    Clock6Mhz = 9,
+
+    /// <summary>
+    /// I/O MODE function.
+    /// </summary>
+    IOMode = 10,
+
+    /// <summary>
+    /// BitBang WRn function.
+    /// </summary>
+    BitbangWrite = 11,
+
+    /// <summary>
+    /// BitBang RDn function.
+    /// </summary>
+    BitbangRead = 12,
+
+    /// <summary>
+    /// RXF# function.
+    /// </summary>
+    RxF = 13,
+}
