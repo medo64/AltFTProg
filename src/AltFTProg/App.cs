@@ -63,7 +63,7 @@ internal static class App {
         Console.WriteLine("  USB Product .........: " + device.UsbProduct);
         Console.WriteLine("  USB Serial ..........: " + device.UsbSerial);
 
-        Console.WriteLine("  Device type .........: " + GetDeviceTypeText(device.DeviceType));
+        Console.WriteLine("  Device type .........: " + GetDeviceTypeText(device));
         Console.WriteLine("  EEPROM size .........: " + device.EepromSize.ToString());
 
         Console.WriteLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
@@ -116,7 +116,16 @@ internal static class App {
         }
     }
 
-    private static string GetDeviceTypeText(FtdiDeviceType type) {
+    private static string GetDeviceTypeText(FtdiDevice device) {
+        string classType;
+        if (device is Ftdi232RDevice) {
+            classType = "232R";
+        } else if (device is FtdiXSeriesDevice) {
+            classType = "FT X Series";
+        } else {
+            classType = "Unknown";
+        }
+        var type = device.DeviceType;
         return type switch {
             FtdiDeviceType.FT232A => "FT232/245AM",
             FtdiDeviceType.FT232B => "FT232/245BM",
@@ -125,7 +134,7 @@ internal static class App {
             FtdiDeviceType.FT2232H => "FT2232H",
             FtdiDeviceType.FT232H => "FT232H",
             FtdiDeviceType.FTXSeries => "FT X Series",
-            _ => "(" + ((int)type).ToString() + ")",
+            _ => "(" + ((int)type).ToString() + ") " + classType,
         };
     }
 
