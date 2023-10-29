@@ -127,34 +127,114 @@ internal static class App {
         }
         var type = device.DeviceType;
         return type switch {
-            FtdiDeviceType.FT232A => "FT232/245AM",
-            FtdiDeviceType.FT232B => "FT232/245BM",
-            FtdiDeviceType.FT2232D => "FT2232D",
-            FtdiDeviceType.FT232R => "FT232R/FT245R",
-            FtdiDeviceType.FT2232H => "FT2232H",
-            FtdiDeviceType.FT232H => "FT232H",
-            FtdiDeviceType.FTXSeries => "FT X Series",
+            FtdiDeviceType.FT232A => "FT232/245AM (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FT232B => "FT232/245BM (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FT2232D => "FT2232D (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FT232R => "FT232R/FT245R (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FT2232H => "FT2232H (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FT232H => "FT232H (" + ((int)type).ToString() + ")",
+            FtdiDeviceType.FTXSeries => "FT X Series (" + ((int)type).ToString() + ")",
             _ => "(" + ((int)type).ToString() + ") " + classType,
         };
     }
 
-    private static string GetPinText(Ftdi232RDevice.PinFunction? function) {
+    private static string GetPinText(Ftdi232RDevice.CBus0PinFunction? function) {
         return function switch {
             null => "",
-            Ftdi232RDevice.PinFunction.TxdEnable => "TXDEN",
-            Ftdi232RDevice.PinFunction.PowerEnable => "PWREN#",
-            Ftdi232RDevice.PinFunction.RxLed => "RXLED#",
-            Ftdi232RDevice.PinFunction.TxLed => "TXLED#",
-            Ftdi232RDevice.PinFunction.TxRxLed => "TX&RXLED#",
-            Ftdi232RDevice.PinFunction.Sleep => "SLEEP#",
-            Ftdi232RDevice.PinFunction.Clock48Mhz => "CLK48",
-            Ftdi232RDevice.PinFunction.Clock24Mhz => "CLK24",
-            Ftdi232RDevice.PinFunction.Clock12Mhz => "CLK12",
-            Ftdi232RDevice.PinFunction.Clock6Mhz => "CLK6",
-            Ftdi232RDevice.PinFunction.IOMode => "IOMODE",
-            Ftdi232RDevice.PinFunction.BitbangWrite => "WR#",
-            Ftdi232RDevice.PinFunction.BitbangRead => "RD#",
-            Ftdi232RDevice.PinFunction.RxF => "RXF#",
+            Ftdi232RDevice.CBus0PinFunction.TxdEnable => "TXDEN (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.PowerEnable => "PWREN# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.Clock48Mhz => "CLK48 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.IOMode => "IOMODE (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.BitBangWr => "BitBang WR# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.BitBangRd => "BitBang RD# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus0PinFunction.RxF => "RXF# (" + ((int)function).ToString() + ")",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
+    }
+
+    private static string GetPinText(Ftdi232RDevice.CBus1PinFunction? function) {
+        return function switch {
+            null => "",
+            Ftdi232RDevice.CBus1PinFunction.TxdEnable => "TXDEN (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.PowerEnable => "PWREN# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.Clock48Mhz => "CLK48 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.IOMode => "IOMODE (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.BitBangWr => "BitBang WR# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.BitBangRd => "BitBang RD# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus1PinFunction.TxE => "TXE# (" + ((int)function).ToString() + ")",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
+    }
+
+    private static string GetPinText(Ftdi232RDevice.CBus2PinFunction? function) {
+        return function switch {
+            null => "",
+            Ftdi232RDevice.CBus2PinFunction.TxdEnable => "TXDEN (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.PowerEnable => "PWREN# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Clock48Mhz => "CLK48 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.IOMode => "IOMODE (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.BitBangWr => "BitBang WR# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.BitBangRd => "BitBang RD# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus2PinFunction.Rd => "RD# (" + ((int)function).ToString() + ")",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
+    }
+
+    private static string GetPinText(Ftdi232RDevice.CBus3PinFunction? function) {
+        return function switch {
+            null => "",
+            Ftdi232RDevice.CBus3PinFunction.TxdEnable => "TXDEN (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.PowerEnable => "PWREN# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Clock48Mhz => "CLK48 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.IOMode => "IOMODE (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.BitBangWr => "BitBang WR# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.BitBangRd => "BitBang RD# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus3PinFunction.Wr => "WR# (" + ((int)function).ToString() + ")",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
+    }
+
+    private static string GetPinText(Ftdi232RDevice.CBus4PinFunction? function) {
+        return function switch {
+            null => "",
+            Ftdi232RDevice.CBus4PinFunction.TxdEnable => "TXDEN (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.PowerEnable => "PWREN# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.Clock48Mhz => "CLK48 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            Ftdi232RDevice.CBus4PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
             _ => "(" + ((int)function).ToString() + ")",
         };
     }

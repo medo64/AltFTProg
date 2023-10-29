@@ -187,12 +187,12 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public PinFunction CBus0Function {
-        get { return (PinFunction)(EepromBytes[20] & 0x0F); }
+    public CBus0PinFunction CBus0Function {
+        get { return (CBus0PinFunction)(EepromBytes[20] & 0x0F); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (Enum.IsDefined(typeof(CBus0PinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[20] = (byte)((EepromBytes[20] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -203,12 +203,12 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public PinFunction CBus1Function {
-        get { return (PinFunction)(EepromBytes[20] >> 4); }
+    public CBus1PinFunction CBus1Function {
+        get { return (CBus1PinFunction)(EepromBytes[20] >> 4); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (Enum.IsDefined(typeof(CBus1PinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[20] = (byte)((EepromBytes[20] & 0x0F) | (newValue << 4));
             IsChecksumValid = true;  // fixup checksum
         }
@@ -219,12 +219,12 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public PinFunction CBus2Function {
-        get { return (PinFunction)(EepromBytes[21] & 0x0F); }
+    public CBus2PinFunction CBus2Function {
+        get { return (CBus2PinFunction)(EepromBytes[21] & 0x0F); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (Enum.IsDefined(typeof(CBus2PinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[21] = (byte)((EepromBytes[21] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -235,12 +235,12 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public PinFunction CBus3Function {
-        get { return (PinFunction)(EepromBytes[21] >> 4); }
+    public CBus3PinFunction CBus3Function {
+        get { return (CBus3PinFunction)(EepromBytes[21] >> 4); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (Enum.IsDefined(typeof(CBus3PinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[21] = (byte)((EepromBytes[21] & 0x0F) | (newValue << 4));
             IsChecksumValid = true;  // fixup checksum
         }
@@ -250,14 +250,14 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// Gets/sets function for CBUS4.
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value (must be between 0 and 15).</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public PinFunction CBus4Function {
-        get { return (PinFunction)(EepromBytes[22] & 0x0F); }
+    public CBus4PinFunction CBus4Function {
+        get { return (CBus4PinFunction)(EepromBytes[22] & 0x0F); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (newValue is < 0 or > 15) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (Enum.IsDefined(typeof(CBus4PinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[22] = (byte)((EepromBytes[22] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -281,9 +281,9 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
 
 
     /// <summary>
-    /// FTDI FT232R pin function.
+    /// FTDI FT232R CBUS0 pin function.
     /// </summary>
-    public enum PinFunction {
+    public enum CBus0PinFunction {
         /// <summary>
         /// TXDEN function.
         /// </summary>
@@ -340,19 +340,307 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         IOMode = 10,
 
         /// <summary>
-        /// BitBang WRn function.
+        /// BitBang WR# function.
         /// </summary>
-        BitbangWrite = 11,
+        BitBangWr = 11,
 
         /// <summary>
-        /// BitBang RDn function.
+        /// BitBang RD# function.
         /// </summary>
-        BitbangRead = 12,
+        BitBangRd = 12,
 
         /// <summary>
         /// RXF# function.
         /// </summary>
         RxF = 13,
+    }
+
+
+
+    /// <summary>
+    /// FTDI FT232R CBUS1 pin function.
+    /// </summary>
+    public enum CBus1PinFunction {
+        /// <summary>
+        /// TXDEN function.
+        /// </summary>
+        TxdEnable = 0,
+
+        /// <summary>
+        /// PWREN# function.
+        /// </summary>
+        PowerEnable = 1,
+
+        /// <summary>
+        /// RXLED# function.
+        /// </summary>
+        RxLed = 2,
+
+        /// <summary>
+        /// TXLED# function.
+        /// </summary>
+        TxLed = 3,
+
+        /// <summary>
+        /// TX&RXLED# function.
+        /// </summary>
+        TxRxLed = 4,
+
+        /// <summary>
+        /// SLEEP# function.
+        /// </summary>
+        Sleep = 5,
+
+        /// <summary>
+        /// CLK48 function.
+        /// </summary>
+        Clock48Mhz = 6,
+
+        /// <summary>
+        /// CLK24 function.
+        /// </summary>
+        Clock24Mhz = 7,
+
+        /// <summary>
+        /// CLK12 function.
+        /// </summary>
+        Clock12Mhz = 8,
+
+        /// <summary>
+        /// CLK6 function.
+        /// </summary>
+        Clock6Mhz = 9,
+
+        /// <summary>
+        /// I/O MODE function.
+        /// </summary>
+        IOMode = 10,
+
+        /// <summary>
+        /// BitBang WR# function.
+        /// </summary>
+        BitBangWr = 11,
+
+        /// <summary>
+        /// BitBang RD# function.
+        /// </summary>
+        BitBangRd = 12,
+
+        /// <summary>
+        /// TXE# function.
+        /// </summary>
+        TxE = 13,
+    }
+
+
+
+    /// <summary>
+    /// FTDI FT232R CBUS2 pin function.
+    /// </summary>
+    public enum CBus2PinFunction {
+        /// <summary>
+        /// TXDEN function.
+        /// </summary>
+        TxdEnable = 0,
+
+        /// <summary>
+        /// PWREN# function.
+        /// </summary>
+        PowerEnable = 1,
+
+        /// <summary>
+        /// RXLED# function.
+        /// </summary>
+        RxLed = 2,
+
+        /// <summary>
+        /// TXLED# function.
+        /// </summary>
+        TxLed = 3,
+
+        /// <summary>
+        /// TX&RXLED# function.
+        /// </summary>
+        TxRxLed = 4,
+
+        /// <summary>
+        /// SLEEP# function.
+        /// </summary>
+        Sleep = 5,
+
+        /// <summary>
+        /// CLK48 function.
+        /// </summary>
+        Clock48Mhz = 6,
+
+        /// <summary>
+        /// CLK24 function.
+        /// </summary>
+        Clock24Mhz = 7,
+
+        /// <summary>
+        /// CLK12 function.
+        /// </summary>
+        Clock12Mhz = 8,
+
+        /// <summary>
+        /// CLK6 function.
+        /// </summary>
+        Clock6Mhz = 9,
+
+        /// <summary>
+        /// I/O MODE function.
+        /// </summary>
+        IOMode = 10,
+
+        /// <summary>
+        /// BitBang WR# function.
+        /// </summary>
+        BitBangWr = 11,
+
+        /// <summary>
+        /// BitBang RD# function.
+        /// </summary>
+        BitBangRd = 12,
+
+        /// <summary>
+        /// RD# function.
+        /// </summary>
+        Rd = 13,
+    }
+
+
+
+    /// <summary>
+    /// FTDI FT232R CBUS3 pin function.
+    /// </summary>
+    public enum CBus3PinFunction {
+        /// <summary>
+        /// TXDEN function.
+        /// </summary>
+        TxdEnable = 0,
+
+        /// <summary>
+        /// PWREN# function.
+        /// </summary>
+        PowerEnable = 1,
+
+        /// <summary>
+        /// RXLED# function.
+        /// </summary>
+        RxLed = 2,
+
+        /// <summary>
+        /// TXLED# function.
+        /// </summary>
+        TxLed = 3,
+
+        /// <summary>
+        /// TX&RXLED# function.
+        /// </summary>
+        TxRxLed = 4,
+
+        /// <summary>
+        /// SLEEP# function.
+        /// </summary>
+        Sleep = 5,
+
+        /// <summary>
+        /// CLK48 function.
+        /// </summary>
+        Clock48Mhz = 6,
+
+        /// <summary>
+        /// CLK24 function.
+        /// </summary>
+        Clock24Mhz = 7,
+
+        /// <summary>
+        /// CLK12 function.
+        /// </summary>
+        Clock12Mhz = 8,
+
+        /// <summary>
+        /// CLK6 function.
+        /// </summary>
+        Clock6Mhz = 9,
+
+        /// <summary>
+        /// I/O MODE function.
+        /// </summary>
+        IOMode = 10,
+
+        /// <summary>
+        /// BitBang WR# function.
+        /// </summary>
+        BitBangWr = 11,
+
+        /// <summary>
+        /// BitBang RD# function.
+        /// </summary>
+        BitBangRd = 12,
+
+        /// <summary>
+        /// WR# function.
+        /// </summary>
+        Wr = 13,
+    }
+
+
+
+    /// <summary>
+    /// FTDI FT232R CBUS4 pin function.
+    /// </summary>
+    public enum CBus4PinFunction {
+        /// <summary>
+        /// TXDEN function.
+        /// </summary>
+        TxdEnable = 0,
+
+        /// <summary>
+        /// PWREN# function.
+        /// </summary>
+        PowerEnable = 1,
+
+        /// <summary>
+        /// RXLED# function.
+        /// </summary>
+        RxLed = 2,
+
+        /// <summary>
+        /// TXLED# function.
+        /// </summary>
+        TxLed = 3,
+
+        /// <summary>
+        /// TX&RXLED# function.
+        /// </summary>
+        TxRxLed = 4,
+
+        /// <summary>
+        /// SLEEP# function.
+        /// </summary>
+        Sleep = 5,
+
+        /// <summary>
+        /// CLK48 function.
+        /// </summary>
+        Clock48Mhz = 6,
+
+        /// <summary>
+        /// CLK24 function.
+        /// </summary>
+        Clock24Mhz = 7,
+
+        /// <summary>
+        /// CLK12 function.
+        /// </summary>
+        Clock12Mhz = 8,
+
+        /// <summary>
+        /// CLK6 function.
+        /// </summary>
+        Clock6Mhz = 9,
     }
 
 }
