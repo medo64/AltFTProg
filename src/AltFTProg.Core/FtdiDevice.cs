@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using AltFTProg.NativeMethods;
 
 /// <summary>
 /// FTDI device.
 /// </summary>
-internal class FtdiDevice {
+public class FtdiDevice {
 
     private FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
         UsbDeviceHandle = usbDeviceHandle;
@@ -661,19 +662,19 @@ internal class FtdiDevice {
     /// Write any changes to EEPROM.
     /// </summary>
     public void SaveChanges() {
-        var ftdi = NativeMethods.ftdi_new();
+        var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            ThrowIfError(ftdi, "ftdi_usb_open_dev", NativeMethods.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
+            ThrowIfError(ftdi, "ftdi_usb_open_dev", LibFtdi.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
-                ThrowIfError(ftdi, "ftdi_write_eeprom", NativeMethods.ftdi_write_eeprom(ftdi, EepromBytes));
+                ThrowIfError(ftdi, "ftdi_write_eeprom", LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes));
             } finally {
-                NativeMethods.ftdi_usb_close(ftdi);
+                LibFtdi.ftdi_usb_close(ftdi);
             }
         } finally {
-            NativeMethods.ftdi_free(ftdi);
+            LibFtdi.ftdi_free(ftdi);
         }
     }
 
@@ -706,7 +707,7 @@ internal class FtdiDevice {
     #region Helpers
 
     private static IReadOnlyCollection<FtdiDevice> GetDevices(IEnumerable<KeyValuePair<int, int>> vidPids) {
-        var ftdi = NativeMethods.ftdi_new();
+        var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         var devices = new List<FtdiDevice>();
@@ -719,12 +720,12 @@ internal class FtdiDevice {
                 var deviceList = IntPtr.Zero;
 
                 try {
-                    var findRes = NativeMethods.ftdi_usb_find_all(ftdi, ref deviceList, vendorId, productId);
+                    var findRes = LibFtdi.ftdi_usb_find_all(ftdi, ref deviceList, vendorId, productId);
                     ThrowIfError(ftdi, "ftdi_usb_find_all", findRes);
 
                     var currDevice = deviceList;
                     while (currDevice != IntPtr.Zero) {
-                        var deviceStruct = (NativeMethods.ftdi_device_list)Marshal.PtrToStructure(currDevice, typeof(NativeMethods.ftdi_device_list))!;
+                        var deviceStruct = (LibFtdi.ftdi_device_list)Marshal.PtrToStructure(currDevice, typeof(LibFtdi.ftdi_device_list))!;
                         var usbDeviceHandle = deviceStruct.dev;
 
                         var rawEepromBytes = GetRawEepromBytes(usbDeviceHandle);
@@ -750,12 +751,12 @@ internal class FtdiDevice {
                     }
                 } finally {
                     if (deviceList != IntPtr.Zero) {
-                        NativeMethods.ftdi_list_free(ref deviceList);
+                        LibFtdi.ftdi_list_free(ref deviceList);
                     }
                 }
             }
         } finally {
-            NativeMethods.ftdi_free(ftdi);
+            LibFtdi.ftdi_free(ftdi);
         }
 
         return (devices.AsReadOnly());
@@ -764,7 +765,7 @@ internal class FtdiDevice {
     [StackTraceHidden()]
     private static void ThrowIfError(IntPtr ftdi, string errorSource, int errorCode) {
         if (errorCode < 0) {
-            var errorPointer = NativeMethods.ftdi_get_error_string(ftdi);
+            var errorPointer = LibFtdi.ftdi_get_error_string(ftdi);
             if (errorPointer == IntPtr.Zero) {
                 throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ".");
             } else {
@@ -775,7 +776,7 @@ internal class FtdiDevice {
     }
 
     private static void GetUsbStrings(IntPtr usbDeviceHandle, out string manufacturer, out string description, out string serial) {
-        var ftdi = NativeMethods.ftdi_new();
+        var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
@@ -783,7 +784,7 @@ internal class FtdiDevice {
             var sbDescription = new StringBuilder(256);
             var sbSerial = new StringBuilder(256);
 
-            var errorCode = NativeMethods.ftdi_usb_get_strings(ftdi, usbDeviceHandle,
+            var errorCode = LibFtdi.ftdi_usb_get_strings(ftdi, usbDeviceHandle,
                 sbManufacturer, sbManufacturer.Capacity,
                 sbDescription, sbDescription.Capacity,
                 sbSerial, sbSerial.Capacity);
@@ -793,7 +794,7 @@ internal class FtdiDevice {
             description = sbDescription.ToString();
             serial = sbSerial.ToString();
         } finally {
-            NativeMethods.ftdi_free(ftdi);
+            LibFtdi.ftdi_free(ftdi);
         }
     }
 
@@ -903,25 +904,25 @@ internal class FtdiDevice {
     /// Gets all EEPROM bytes without any processing.
     /// </summary>
     private static byte[] GetRawEepromBytes(IntPtr usbDeviceHandle) {
-        var ftdi = NativeMethods.ftdi_new();
+        var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            ThrowIfError(ftdi, "ftdi_usb_open_dev", NativeMethods.ftdi_usb_open_dev(ftdi, usbDeviceHandle));
+            ThrowIfError(ftdi, "ftdi_usb_open_dev", LibFtdi.ftdi_usb_open_dev(ftdi, usbDeviceHandle));
 
             try {
                 var rawEepromBytes = new byte[4096];
-                var len = NativeMethods.ftdi_read_eeprom_getsize(ftdi, rawEepromBytes, rawEepromBytes.Length);
+                var len = LibFtdi.ftdi_read_eeprom_getsize(ftdi, rawEepromBytes, rawEepromBytes.Length);
                 ThrowIfError(ftdi, "ftdi_read_eeprom", len);
 
                 var eepromBytes = new byte[len];
                 Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, eepromBytes.Length);
                 return eepromBytes;
             } finally {
-                NativeMethods.ftdi_usb_close(ftdi);
+                LibFtdi.ftdi_usb_close(ftdi);
             }
         } finally {
-            NativeMethods.ftdi_free(ftdi);
+            LibFtdi.ftdi_free(ftdi);
         }
     }
 
@@ -944,161 +945,6 @@ internal class FtdiDevice {
     }
 
     #endregion Helpers
-
-
-    private static class NativeMethods {
-
-        /** FTDI chip type */
-        public enum ftdi_chip_type {
-            TYPE_AM = 0,
-            TYPE_BM = 1,
-            TYPE_2232C = 2,
-            TYPE_R = 3,
-            TYPE_2232H = 4,
-            TYPE_4232H = 5,
-            TYPE_232H = 6,
-            TYPE_230X = 7,
-        };
-
-        /** Automatic loading / unloading of kernel modules */
-        public enum ftdi_module_detach_mode {
-            AUTO_DETACH_SIO_MODULE = 0,
-            DONT_DETACH_SIO_MODULE = 1,
-            AUTO_DETACH_REATACH_SIO_MODULE = 2,
-        };
-
-
-        /** Main context structure for all libftdi functions */
-        [StructLayout(LayoutKind.Sequential)]
-        public struct ftdi_context {
-            /* USB specific */
-            /** libusb's usb_dev_handle */
-            public IntPtr usb_dev;
-            /** usb read timeout */
-            public int usb_read_timeout;
-            /** usb write timeout */
-            public int usb_write_timeout;
-
-            // FTDI specific
-            /* FTDI chip type */
-            public ftdi_chip_type type;
-            /** baudrate */
-            public int baudrate;
-            /** bitbang mode state */
-            public byte bitbang_enabled;
-            /** pointer to read buffer for ftdi_read_data */
-            public IntPtr readbuffer;
-            /** read buffer offset */
-            public uint readbuffer_offset;
-            /** number of remaining data in internal read buffer */
-            public uint readbuffer_remaining;
-            /** read buffer chunk size */
-            public uint readbuffer_chunksize;
-            /** write buffer chunk size */
-            public uint writebuffer_chunksize;
-            /** maximum packet size. Needed for filtering modem status bytes every n packets. */
-            public uint max_packet_size;
-
-            /* FTDI FT2232C requirecments */
-            /** FT2232C interface number: 0 or 1 */
-            public int @interface;   /* 0 or 1 */
-            /** FT2232C index number: 1 or 2 */
-            public int index;       /* 1 or 2 */
-            /* Endpoints */
-            /** FT2232C end points: 1 or 2 */
-            public int in_ep;
-            public int out_ep;      /* 1 or 2 */
-
-            /** Bitbang mode. 1: (default) Normal bitbang mode, 2: FT2232C SPI bitbang mode */
-            public byte bitbang_mode;
-
-            /** EEPROM size. Default is 128 bytes for 232BM and 245BM chips */
-            public int eeprom_size;
-
-            /** String representation of last error */
-            public IntPtr error_str;           /* const char * */
-
-            /** Buffer needed for async communication */
-            public IntPtr async_usb_buffer;
-            /** Number of URB-structures we can buffer */
-            public uint async_usb_buffe_rsize;
-
-            /** Defines behavior in case a kernel module is already attached to the device */
-            public ftdi_module_detach_mode module_detach_mode;
-        };
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct ftdi_device_list {
-            /** pointer to next entry */
-            public IntPtr next;
-            /** pointer to libusb's usb_device */
-            public IntPtr dev;
-        };
-
-
-        [DllImport("libftdi.so")]
-        public static extern void ftdi_free(
-            IntPtr ftdi
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern IntPtr ftdi_new(
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern void ftdi_list_free(
-            ref IntPtr devlist
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_read_eeprom_getsize(
-            IntPtr ftdi,
-            [Out] byte[] eeprom,
-            int maxsize
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_write_eeprom(
-            IntPtr ftdi,
-            byte[] eeprom
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_usb_find_all(
-            IntPtr ftdi,
-            ref IntPtr devlist,
-            int vendor,
-            int product
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_usb_close(
-            IntPtr ftdi
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_usb_get_strings(
-            IntPtr ftdi,
-            IntPtr dev,
-            [MarshalAs(UnmanagedType.LPStr)] StringBuilder manufacturer,
-            int mnf_len,
-            [MarshalAs(UnmanagedType.LPStr)] StringBuilder description,
-            int desc_len,
-            [MarshalAs(UnmanagedType.LPStr)] StringBuilder serial,
-            int serial_len
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern int ftdi_usb_open_dev(
-            IntPtr ftdi,
-            IntPtr dev
-        );
-
-        [DllImport("libftdi.so")]
-        public static extern IntPtr ftdi_get_error_string(
-            IntPtr ftdi
-        );
-    }
 }
 
 
