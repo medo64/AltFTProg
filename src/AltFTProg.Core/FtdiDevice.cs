@@ -9,9 +9,9 @@ using AltFTProg.NativeMethods;
 /// <summary>
 /// FTDI device.
 /// </summary>
-public class FtdiDevice {
+public abstract class FtdiDevice {
 
-    private FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
+    internal protected FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
         UsbDeviceHandle = usbDeviceHandle;
         UsbVendorId = usbVendorId;
         UsbProductId = usbProductId;
@@ -23,7 +23,7 @@ public class FtdiDevice {
 
     private readonly IntPtr UsbDeviceHandle;
 
-    private readonly byte[] EepromBytes;
+    protected readonly byte[] EepromBytes;
 
 
     #region USB Properties
@@ -91,90 +91,6 @@ public class FtdiDevice {
 
 
     /// <summary>
-    /// Gets/sets device manufacturer name.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 44/48 characters.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public string? Manufacturer {
-        get {
-            GetEepromStrings(EepromBytes, EepromSize, out var manufacturer, out _, out _);
-            return manufacturer;
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            GetEepromStrings(EepromBytes, EepromSize, out _, out var product, out var serial);
-            if (DeviceType == FtdiDeviceType.FT232R) {
-                if (CountUnicodeChars(value, product, serial) > 48 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 48 characters."); }
-            } else {
-                if (CountUnicodeChars(value, product, serial) > 44 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 44 characters."); }
-            }
-            SetEepromStrings(EepromBytes, EepromSize, value, product, serial);
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-    /// <summary>
-    /// Gets/sets device product name.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Combined length of manufacturer, product, and serial USB string can be up to 44/48 characters.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public string? Product {
-        get {
-            GetEepromStrings(EepromBytes, EepromSize, out _, out var product, out _);
-            return product;
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            GetEepromStrings(EepromBytes, EepromSize, out var manufacturer, out _, out var serial);
-            if (DeviceType == FtdiDeviceType.FT232R) {
-                if (CountUnicodeChars(manufacturer, value, serial) > 48 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 48 characters."); }
-            } else {
-                if (CountUnicodeChars(manufacturer, value, serial) > 44 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 44 characters."); }
-            }
-            SetEepromStrings(EepromBytes, EepromSize, manufacturer, value, serial);
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-    /// <summary>
-    /// Gets/sets device serial number.
-    /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Combined length of manufacturer, product, and serial USB string can be up to 44/48 characters.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public string? Serial {
-        get {
-            GetEepromStrings(EepromBytes, EepromSize, out _, out _, out var serial);
-            return serial;
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            if (CountUnicodeChars(value) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
-
-            GetEepromStrings(EepromBytes, EepromSize, out var manufacturer, out var product, out _);
-            if (DeviceType == FtdiDeviceType.FT232R) {
-                if (CountUnicodeChars(manufacturer, product, value) > 48 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 48 characters."); }
-            } else {
-                if (CountUnicodeChars(manufacturer, product, value) > 44 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Combined length of manufacturer, product, and serial USB string can be up to 44 characters."); }
-            }
-            SetEepromStrings(EepromBytes, EepromSize, manufacturer, product, value);
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-
-    /// <summary>
     /// Gets/sets device vendor ID.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
@@ -210,50 +126,63 @@ public class FtdiDevice {
 
 
     /// <summary>
+    /// Gets/sets device manufacturer name.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual string Manufacturer {
+        get {
+            Helpers.GetEepromStrings(EepromBytes, EepromSize, out var manufacturer, out _, out _);
+            return manufacturer;
+        }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
+    /// Gets/sets device product name.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual string Product {
+        get {
+            Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out var product, out _);
+            return product;
+        }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
+    /// Gets/sets device serial number.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual string Serial {
+        get {
+            Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out _, out var serial);
+            return serial;
+        }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
     /// Gets/sets remote wakeup.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public bool? IsRemoteWakeupEnabled {
-        get {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { return null; }
-            return (EepromBytes[8] & 0x20) != 0;
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value.Value ? 0x20 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public  virtual bool IsRemoteWakeupEnabled {
+        get { return (EepromBytes[8] & 0x20) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
     }
 
     /// <summary>
     /// Gets/sets if device is self-powered.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public bool? IsSelfPowered {
-        get {
-            return (EepromBytes[8] & 0x40) != 0;
-        }
-        set {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x40) | (value.Value ? 0x40 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool IsSelfPowered {
+        get { return (EepromBytes[8] & 0x40) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
     }
 
     /// <summary>
     /// Gets/sets if device is bus-powered.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool? IsBusPowered {
+    public bool IsBusPowered {
         get { return !IsSelfPowered; }
         set { IsSelfPowered = !value; }
     }
@@ -261,63 +190,29 @@ public class FtdiDevice {
     /// <summary>
     /// Gets/sets device power requirement.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public int? MaxPower {
-        get {
-            return EepromBytes[9] * 2;  // 2 mA unit
-        }
-        set {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-            if (value is < 0 or > 500) { throw new ArgumentOutOfRangeException(nameof(value), "Value must be between 0 and 500."); }
-
-            var newValue = (value + 1) / 2;  // round up
-            EepromBytes[9] = (byte)newValue;
-            IsChecksumValid = true;  // fixup checksum
-        }
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual int MaxPower {
+        get { return EepromBytes[9] * 2; }  // 2 mA unit
+        set { throw new InvalidOperationException("Device not supported."); }
     }
 
 
     /// <summary>
     /// Gets/sets if IO pins will be pulled down in USB suspend.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public bool? IsIOPulledDownDuringSuspend {
-        get {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { return null; }
-            return (EepromBytes[10] & 0x04) != 0;
-        }
-        set {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            EepromBytes[10] = (byte)((EepromBytes[10] & ~0x04) | (value.Value ? 0x04 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool IsIOPulledDownDuringSuspend {
+        get { return (EepromBytes[10] & 0x04) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
     }
 
     /// <summary>
     /// Gets/sets if serial number will be reported by device.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public bool? IsSerialNumberEnabled {
-        get {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { throw new InvalidOperationException("Device not supported."); }
-            return (EepromBytes[10] & 0x08) != 0;
-        }
-        set {
-            if (DeviceType is not FtdiDeviceType.FT232R and not FtdiDeviceType.FTXSeries) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
-
-            EepromBytes[10] = (byte)((EepromBytes[10] & ~0x08) | (value.Value ? 0x08 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool IsSerialNumberEnabled {
+        get { return (EepromBytes[10] & 0x08) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
     }
 
 
@@ -627,12 +522,12 @@ public class FtdiDevice {
     public bool IsChecksumValid {
         get {
             var eepromChecksum = (UInt16)(EepromBytes[EepromSize - 1] << 8 | EepromBytes[EepromSize - 2]);
-            var checksum = GetChecksum(EepromBytes, EepromSize, DeviceType);
+            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize, DeviceType);
             return (eepromChecksum == checksum);
         }
         set {
             if (value == false) { throw new ArgumentException("Checksum validity cannot be set to false.", nameof(value)); }
-            var checksum = GetChecksum(EepromBytes, EepromSize, DeviceType);
+            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize, DeviceType);
             EepromBytes[EepromSize - 2] = (byte)(checksum & 0xFF);
             EepromBytes[EepromSize - 1] = (byte)(checksum >> 8);
         }
@@ -703,9 +598,6 @@ public class FtdiDevice {
         return GetDevices(new KeyValuePair<int, int>[] { new(vendorId, productId) });
     }
 
-
-    #region Helpers
-
     private static IReadOnlyCollection<FtdiDevice> GetDevices(IEnumerable<KeyValuePair<int, int>> vidPids) {
         var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
@@ -744,7 +636,18 @@ public class FtdiDevice {
                         var eepromSize = eepromExtraSize;
                         if (type == FtdiDeviceType.FT232R) { eepromSize = 128; }  // for some reason FT232R reports 256 bytes, but only 128 are user data
 
-                        var device = new FtdiDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize);
+                        FtdiDevice device;
+                        switch (type) {
+                            case FtdiDeviceType.FT232R: device = new Ftdi232RDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize); break;
+                            case FtdiDeviceType.FTXSeries: device = new FtdiXSeriesDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize); break;
+                            default:
+                                if ((type == 0) && (eepromSize == 256) && (rawEepromBytes.Length == 256)) {
+                                    device = new Ftdi232RDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, 128);
+                                } else {
+                                    device = new FtdiUnknownDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize);
+                                }
+                                break;
+                        };
                         devices.Add(device);
 
                         currDevice = deviceStruct.next;
@@ -762,18 +665,6 @@ public class FtdiDevice {
         return (devices.AsReadOnly());
     }
 
-    [StackTraceHidden()]
-    private static void ThrowIfError(IntPtr ftdi, string errorSource, int errorCode) {
-        if (errorCode < 0) {
-            var errorPointer = LibFtdi.ftdi_get_error_string(ftdi);
-            if (errorPointer == IntPtr.Zero) {
-                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ".");
-            } else {
-                var errorText = Marshal.PtrToStringUTF8(errorPointer);
-                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ": " + errorText);
-            }
-        }
-    }
 
     private static void GetUsbStrings(IntPtr usbDeviceHandle, out string manufacturer, out string description, out string serial) {
         var ftdi = LibFtdi.ftdi_new();
@@ -798,112 +689,10 @@ public class FtdiDevice {
         }
     }
 
-    private static void GetEepromStrings(byte[] eepromBytes, int eepromSize, out string manufacturer, out string product, out string serial) {
-        if ((eepromBytes[0x0E] & 0x80) == 0) { throw new InvalidOperationException("Manufacturer EEPROM field not detected."); }
-        if ((eepromBytes[0x10] & 0x80) == 0) { throw new InvalidOperationException("Product EEPROM field not detected."); }
-        if ((eepromBytes[0x12] & 0x80) == 0) { throw new InvalidOperationException("Serial EEPROM field not detected."); }
-
-        var offsetManufacturer = eepromBytes[0x0E];
-        var offsetProduct = eepromBytes[0x10];
-        var offsetSerial = eepromBytes[0x12];
-        if (eepromSize < 256) {  // at least on FT232R, first bit is high and not part of offset
-            offsetManufacturer &= 0x7F;
-            offsetProduct &= 0x7F;
-            offsetSerial &= 0x7F;
-        }
-
-        var len1Manufacturer = eepromBytes[0x0F];
-        var len1Product = eepromBytes[0x11];
-        var len1Serial = eepromBytes[0x13];
-
-        var len2Manufacturer = eepromBytes[offsetManufacturer];
-        var len2Product = eepromBytes[offsetProduct];
-        var len2Serial = eepromBytes[offsetSerial];
-
-        if (len1Manufacturer != len2Manufacturer) { throw new InvalidOperationException("Manufacturer EEPROM field length mismatch."); }
-        if (len1Product != len2Product) { throw new InvalidOperationException("Product EEPROM field length mismatch."); }
-        if (len1Serial != len2Serial) { throw new InvalidOperationException("Serial EEPROM field length mismatch."); }
-
-        if (len1Manufacturer < 2) { throw new InvalidOperationException("Manufacturer EEPROM field length too small."); }
-        if (len1Product < 2) { throw new InvalidOperationException("Product EEPROM field length too small."); }
-        if (len1Serial < 2) { throw new InvalidOperationException("Serial EEPROM field length too small."); }
-
-        if (offsetManufacturer + len1Manufacturer >= eepromSize) { throw new InvalidOperationException("Manufacturer EEPROM field outside of bound."); }
-        if (offsetProduct + len1Product >= eepromSize) { throw new InvalidOperationException("Product EEPROM field outside of bound."); }
-        if (offsetSerial + len1Serial >= eepromSize) { throw new InvalidOperationException("Serial EEPROM field outside of bound."); }
-
-        if (eepromBytes[offsetManufacturer + 1] != 0x03) { throw new InvalidOperationException("Manufacturer EEPROM field type mismatch."); }
-        if (eepromBytes[offsetProduct + 1] != 0x03) { throw new InvalidOperationException("Product EEPROM field type mismatch."); }
-        if (eepromBytes[offsetSerial + 1] != 0x03) { throw new InvalidOperationException("Serial EEPROM field type mismatch."); }
-
-        manufacturer = GetEepromString(eepromBytes, offsetManufacturer, len1Manufacturer);
-        product = GetEepromString(eepromBytes, offsetProduct, len1Product);
-        serial = GetEepromString(eepromBytes, offsetSerial, len1Serial);
-    }
-
-    private static string GetEepromString(byte[] eepromBytes, int offset, int length) {
-        var stringBytes = new byte[length - 2];
-        Buffer.BlockCopy(eepromBytes, offset + 2, stringBytes, 0, stringBytes.Length);
-        return Encoding.Unicode.GetString(stringBytes);
-    }
-
-    private static void SetEepromStrings(byte[] eepromBytes, int eepromSize, string manufacturer, string product, string serial) {
-        var manufacturerBytes = Encoding.Unicode.GetBytes(manufacturer);
-        var productBytes = Encoding.Unicode.GetBytes(product);
-        var serialBytes = Encoding.Unicode.GetBytes(serial);
-
-        var lenManufacturer = manufacturerBytes.Length + 2;
-        var lenProduct = productBytes.Length + 2;
-        var lenSerial = serialBytes.Length + 2;
-
-        var offsetFirst = eepromBytes[0x0E];
-        if (eepromSize < 256) { offsetFirst &= 0x7F; }  // at least on FT232R, first bit is high and not part of offset
-
-        var offsetManufacturer = offsetFirst;
-        var offsetProduct = offsetManufacturer + lenManufacturer;
-        var offsetSerial = offsetProduct + lenProduct;
-        var offsetLast = offsetSerial + lenSerial;
-        if (offsetLast > (eepromSize - 2)) { throw new InvalidOperationException("Not enough memory to write USB strings."); }
-
-        eepromBytes[0x0E] = (byte)(offsetManufacturer);
-        eepromBytes[0x0F] = (byte)(lenManufacturer);
-        eepromBytes[0x10] = (byte)(offsetProduct);
-        eepromBytes[0x11] = (byte)(lenProduct);
-        eepromBytes[0x12] = (byte)(offsetSerial);
-        eepromBytes[0x13] = (byte)(lenSerial);
-        if (eepromSize < 256) {  // at least on FT232R, first bit is high and not part of offset
-            eepromBytes[0x0E] |= 0x80;
-            eepromBytes[0x10] |= 0x80;
-            eepromBytes[0x12] |= 0x80;
-        }
-
-        eepromBytes[offsetManufacturer + 0] = (byte)lenManufacturer;
-        eepromBytes[offsetManufacturer + 1] = 0x03;
-        for (var i = 0; i < manufacturerBytes.Length; i++) {
-            eepromBytes[offsetManufacturer + 2 + i] = manufacturerBytes[i];
-        }
-
-        eepromBytes[offsetProduct + 0] = (byte)lenProduct;
-        eepromBytes[offsetProduct + 1] = 0x03;
-        for (var i = 0; i < productBytes.Length; i++) {
-            eepromBytes[offsetProduct + 2 + i] = productBytes[i];
-        }
-
-        eepromBytes[offsetSerial + 0] = (byte)lenSerial;
-        eepromBytes[offsetSerial + 1] = 0x03;
-        for (var i = 0; i < serialBytes.Length; i++) {
-            eepromBytes[offsetSerial + 2 + i] = serialBytes[i];
-        }
-
-        for (var i = offsetLast; i < eepromSize - 2; i++) {
-            eepromBytes[i] = 0;
-        }
-    }
-
     /// <summary>
     /// Gets all EEPROM bytes without any processing.
     /// </summary>
-    private static byte[] GetRawEepromBytes(IntPtr usbDeviceHandle) {
+    internal static byte[] GetRawEepromBytes(IntPtr usbDeviceHandle) {
         var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
@@ -926,142 +715,17 @@ public class FtdiDevice {
         }
     }
 
-    private static ushort GetChecksum(byte[] eeprom, int eepromSize, FtdiDeviceType device) {
-        UInt16 crc = 0xAAAA;
-        for (var i = 0; i < eepromSize - 2; i += 2) {
-            if ((device == FtdiDeviceType.FTXSeries) && (i == 36)) { i = 128; }
-            crc ^= (UInt16)(eeprom[i] | (eeprom[i + 1] << 8));
-            crc = (UInt16)((crc << 1) | (crc >> 15));
+    [StackTraceHidden()]
+    internal static void ThrowIfError(IntPtr ftdi, string errorSource, int errorCode) {
+        if (errorCode < 0) {
+            var errorPointer = LibFtdi.ftdi_get_error_string(ftdi);
+            if (errorPointer == IntPtr.Zero) {
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ".");
+            } else {
+                var errorText = Marshal.PtrToStringUTF8(errorPointer);
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ": " + errorText);
+            }
         }
-        return crc;
     }
 
-    private static int CountUnicodeChars(params string[] values) {
-        var byteCount = 0;
-        foreach (var value in values) {
-            byteCount += Encoding.Unicode.GetByteCount(value);
-        }
-        return byteCount;
-    }
-
-    #endregion Helpers
-}
-
-
-
-/// <summary>
-/// FTDI chip type.
-/// </summary>
-public enum FtdiDeviceType {
-    /// <summary>
-    /// FT232/245AM (0403:6001).
-    /// </summary>
-    FT232A = 512,
-
-    /// <summary>
-    /// FT232/245BM (0403:6001).
-    /// </summary>
-    FT232B = 1024,
-
-    /// <summary>
-    /// FT2232D (0403:6010).
-    /// </summary>
-    FT2232D = 1280,
-
-    /// <summary>
-    /// FT232R/FT245R (0403:6001).
-    /// </summary>
-    FT232R = 1536,
-
-    /// <summary>
-    /// FT2232H (0403:6010).
-    /// </summary>
-    FT2232H = 1792,
-
-    /// <summary>
-    /// FT232H (0403:6014).
-    /// </summary>
-    FT232H = 2304,
-
-    /// <summary>
-    /// FT X Series (0403:6015).
-    /// </summary>
-    FTXSeries = 4096,
-};
-
-
-
-/// <summary>
-/// FTDI pin function.
-/// </summary>
-public enum FtdiDevicePinFunction {
-    /// <summary>
-    /// TXDEN function.
-    /// </summary>
-    TxdEnable = 0,
-
-    /// <summary>
-    /// PWREN# function.
-    /// </summary>
-    PowerEnable = 1,
-
-    /// <summary>
-    /// RXLED# function.
-    /// </summary>
-    RxLed = 2,
-
-    /// <summary>
-    /// TXLED# function.
-    /// </summary>
-    TxLed = 3,
-
-    /// <summary>
-    /// TX&RXLED# function.
-    /// </summary>
-    TxRxLed = 4,
-
-    /// <summary>
-    /// SLEEP# function.
-    /// </summary>
-    Sleep = 5,
-
-    /// <summary>
-    /// CLK48 function.
-    /// </summary>
-    Clock48Mhz = 6,
-
-    /// <summary>
-    /// CLK24 function.
-    /// </summary>
-    Clock24Mhz = 7,
-
-    /// <summary>
-    /// CLK12 function.
-    /// </summary>
-    Clock12Mhz = 8,
-
-    /// <summary>
-    /// CLK6 function.
-    /// </summary>
-    Clock6Mhz = 9,
-
-    /// <summary>
-    /// I/O MODE function.
-    /// </summary>
-    IOMode = 10,
-
-    /// <summary>
-    /// BitBang WRn function.
-    /// </summary>
-    BitbangWrite = 11,
-
-    /// <summary>
-    /// BitBang RDn function.
-    /// </summary>
-    BitbangRead = 12,
-
-    /// <summary>
-    /// RXF# function.
-    /// </summary>
-    RxF = 13,
 }
