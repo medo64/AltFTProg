@@ -249,7 +249,6 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// <summary>
     /// Gets/sets function for CBUS4.
     /// </summary>
-    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public CBus4PinFunction CBus4Function {

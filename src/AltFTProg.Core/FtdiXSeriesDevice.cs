@@ -70,4 +70,187 @@ public sealed class FtdiXSeriesDevice : FtdiDevice {
         }
     }
 
+
+    /// <summary>
+    /// Gets/sets function for CBUS0.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public CBusPinFunction CBus0Function {
+        get { return (CBusPinFunction)(EepromBytes[26]); }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (Enum.IsDefined(typeof(CBusPinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[26] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS1.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public CBusPinFunction CBus1Function {
+        get { return (CBusPinFunction)(EepromBytes[27]); }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (Enum.IsDefined(typeof(CBusPinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[27] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets function for CBUS2.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public CBusPinFunction CBus2Function {
+        get { return (CBusPinFunction)(EepromBytes[28]); }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (Enum.IsDefined(typeof(CBusPinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[28] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+    /// <summary>
+    /// Gets/sets function for CBUS3.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public CBusPinFunction CBus3Function {
+        get { return (CBusPinFunction)(EepromBytes[29]); }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            var newValue = (int)value;
+            if (Enum.IsDefined(typeof(CBusPinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            EepromBytes[29] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+
+    /// <summary>
+    /// FTDI X Series CBUS pin function.
+    /// </summary>
+    public enum CBusPinFunction {
+        /// <summary>
+        /// Tristate function.
+        /// </summary>
+        Tristate = 0,
+
+        /// <summary>
+        /// RXLED# function.
+        /// </summary>
+        RxLed = 1,
+
+        /// <summary>
+        /// TXLED# function.
+        /// </summary>
+        TxLed = 2,
+
+        /// <summary>
+        /// TX&RXLED# function.
+        /// </summary>
+        TxRxLed = 3,
+
+        /// <summary>
+        /// PWREN# function.
+        /// </summary>
+        PwrEn = 4,
+
+        /// <summary>
+        /// SLEEP# function.
+        /// </summary>
+        Sleep = 5,
+
+        /// <summary>
+        /// Drive_0 function.
+        /// </summary>
+        Drive0 = 6,
+
+        /// <summary>
+        /// Drive_1 function.
+        /// </summary>
+        Drive1 = 7,
+
+        /// <summary>
+        /// GPIO function.
+        /// </summary>
+        Gpio = 8,
+
+        /// <summary>
+        /// TXDEN function.
+        /// </summary>
+        TxdEn = 9,
+
+        /// <summary>
+        /// CLK24 function.
+        /// </summary>
+        Clock24Mhz = 10,
+
+        /// <summary>
+        /// CLK12 function.
+        /// </summary>
+        Clock12Mhz = 11,
+
+        /// <summary>
+        /// CLK6 function.
+        /// </summary>
+        Clock6Mhz = 12,
+
+        /// <summary>
+        /// BCD_Charger function.
+        /// </summary>
+        BcdCharger = 13,
+
+        /// <summary>
+        /// BCD_Charger# function.
+        /// </summary>
+        BcdChargerN = 14,
+
+        /// <summary>
+        /// I2C_TXE# function.
+        /// </summary>
+        I2CTxE = 15,
+
+        /// <summary>
+        /// I2C_RXF# function.
+        /// </summary>
+        I2CRxF = 16,
+
+        /// <summary>
+        /// VBUS_Sense function.
+        /// </summary>
+        VbusSense = 17,
+
+        /// <summary>
+        /// BitBang WR# function.
+        /// </summary>
+        BitBangWr = 18,
+
+        /// <summary>
+        /// BitBang RD# function.
+        /// </summary>
+        BitBangRd = 19,
+
+        /// <summary>
+        /// Time_Stamp function.
+        /// </summary>
+        TimeStamp = 20,
+
+        /// <summary>
+        /// Keep_Awake# function.
+        /// </summary>
+        KeepAwake = 21,
+    }
+
 }

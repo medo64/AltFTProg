@@ -91,6 +91,11 @@ internal static class App {
             Console.WriteLine("  CBUS3 function ......: " + GetPinText(device232R.CBus3Function));
             Console.WriteLine("  CBUS4 function ......: " + GetPinText(device232R.CBus4Function));
             Console.WriteLine("  High-current IO .....: " + GetBooleanText(device232R.IsHighCurrentIO, "Yes", "No"));
+        } else if (device is FtdiXSeriesDevice deviceXSeries) {
+            Console.WriteLine("  CBUS0 function ......: " + GetPinText(deviceXSeries.CBus0Function));
+            Console.WriteLine("  CBUS1 function ......: " + GetPinText(deviceXSeries.CBus1Function));
+            Console.WriteLine("  CBUS2 function ......: " + GetPinText(deviceXSeries.CBus2Function));
+            Console.WriteLine("  CBUS3 function ......: " + GetPinText(deviceXSeries.CBus3Function));
         }
         Console.WriteLine("  Checksum ............: " + GetBooleanText(device.IsChecksumValid, "Valid", "Invalid"));
 
@@ -235,6 +240,35 @@ internal static class App {
             Ftdi232RDevice.CBus4PinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
             Ftdi232RDevice.CBus4PinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
             Ftdi232RDevice.CBus4PinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            _ => "(" + ((int)function).ToString() + ")",
+        };
+    }
+
+    private static string GetPinText(FtdiXSeriesDevice.CBusPinFunction? function) {
+        return function switch {
+            null => "",
+            FtdiXSeriesDevice.CBusPinFunction.Tristate => "Tristate (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.RxLed => "RXLED# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.TxLed => "TXLED# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.TxRxLed => "TX&RXLED# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.PwrEn => "PWREN# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Sleep => "SLEEP# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Drive0 => "Drive_0 (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Drive1 => "Drive_1 (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Gpio => "GPIO (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.TxdEn => "TXDEN (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Clock24Mhz => "CLK24 (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Clock12Mhz => "CLK12 (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.Clock6Mhz => "CLK6 (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.BcdCharger => "BCD_Charger (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.BcdChargerN => "BCD_Charger# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.I2CTxE => "I2C_TXE# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.I2CRxF => "I2C_RXF# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.VbusSense => "VBUS_Sense (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.BitBangWr => "BitBang_WR# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.BitBangRd => "BitBang_RD# (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.TimeStamp => "Time_Stamp (" + ((int)function).ToString() + ")",
+            FtdiXSeriesDevice.CBusPinFunction.KeepAwake => "Keep_Awake (" + ((int)function).ToString() + ")",
             _ => "(" + ((int)function).ToString() + ")",
         };
     }
