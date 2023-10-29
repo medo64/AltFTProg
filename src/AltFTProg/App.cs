@@ -76,20 +76,22 @@ internal static class App {
         Console.WriteLine("  Maximum power .......: " + device.MaxPower.ToString() + " mA");
         Console.WriteLine("  IO during suspend ...: " + GetBooleanText(device.IsIOPulledDownDuringSuspend, "Pulled-down", "Floating"));
         Console.WriteLine("  Serial number enabled: " + GetBooleanText(device.IsSerialNumberEnabled, "Yes", "No"));
-        Console.WriteLine("  TXD inverted ........: " + GetBooleanText(device.IsTxdInverted, "Yes", "No"));
-        Console.WriteLine("  RXD inverted ........: " + GetBooleanText(device.IsRxdInverted, "Yes", "No"));
-        Console.WriteLine("  RTS inverted ........: " + GetBooleanText(device.IsRtsInverted, "Yes", "No"));
-        Console.WriteLine("  CTS inverted ........: " + GetBooleanText(device.IsCtsInverted, "Yes", "No"));
-        Console.WriteLine("  DTR inverted ........: " + GetBooleanText(device.IsDtrInverted, "Yes", "No"));
-        Console.WriteLine("  DSR inverted ........: " + GetBooleanText(device.IsDsrInverted, "Yes", "No"));
-        Console.WriteLine("  DCD inverted ........: " + GetBooleanText(device.IsDcdInverted, "Yes", "No"));
-        Console.WriteLine("  RI inverted .........: " + GetBooleanText(device.IsRiInverted, "Yes", "No"));
-        Console.WriteLine("  CBUS0 function ......: " + GetPinText(device.CBus0Function));
-        Console.WriteLine("  CBUS1 function ......: " + GetPinText(device.CBus1Function));
-        Console.WriteLine("  CBUS2 function ......: " + GetPinText(device.CBus2Function));
-        Console.WriteLine("  CBUS3 function ......: " + GetPinText(device.CBus3Function));
-        Console.WriteLine("  CBUS4 function ......: " + GetPinText(device.CBus4Function));
-        Console.WriteLine("  High-current IO .....: " + GetBooleanText(device.IsHighCurrentIO, "Yes", "No"));
+        if (device is Ftdi232RDevice device232R) {
+            Console.WriteLine("  TXD inverted ........: " + GetBooleanText(device232R.IsTxdInverted, "Yes", "No"));
+            Console.WriteLine("  RXD inverted ........: " + GetBooleanText(device232R.IsRxdInverted, "Yes", "No"));
+            Console.WriteLine("  RTS inverted ........: " + GetBooleanText(device232R.IsRtsInverted, "Yes", "No"));
+            Console.WriteLine("  CTS inverted ........: " + GetBooleanText(device232R.IsCtsInverted, "Yes", "No"));
+            Console.WriteLine("  DTR inverted ........: " + GetBooleanText(device232R.IsDtrInverted, "Yes", "No"));
+            Console.WriteLine("  DSR inverted ........: " + GetBooleanText(device232R.IsDsrInverted, "Yes", "No"));
+            Console.WriteLine("  DCD inverted ........: " + GetBooleanText(device232R.IsDcdInverted, "Yes", "No"));
+            Console.WriteLine("  RI inverted .........: " + GetBooleanText(device232R.IsRiInverted, "Yes", "No"));
+            Console.WriteLine("  CBUS0 function ......: " + GetPinText(device232R.CBus0Function));
+            Console.WriteLine("  CBUS1 function ......: " + GetPinText(device232R.CBus1Function));
+            Console.WriteLine("  CBUS2 function ......: " + GetPinText(device232R.CBus2Function));
+            Console.WriteLine("  CBUS3 function ......: " + GetPinText(device232R.CBus3Function));
+            Console.WriteLine("  CBUS4 function ......: " + GetPinText(device232R.CBus4Function));
+            Console.WriteLine("  High-current IO .....: " + GetBooleanText(device232R.IsHighCurrentIO, "Yes", "No"));
+        }
         Console.WriteLine("  Checksum ............: " + GetBooleanText(device.IsChecksumValid, "Valid", "Invalid"));
 
         Console.WriteLine("  EEPROM");
@@ -127,23 +129,23 @@ internal static class App {
         };
     }
 
-    private static string GetPinText(FtdiDevicePinFunction? function) {
+    private static string GetPinText(Ftdi232RDevice.PinFunction? function) {
         return function switch {
             null => "",
-            FtdiDevicePinFunction.TxdEnable => "TXDEN",
-            FtdiDevicePinFunction.PowerEnable => "PWREN#",
-            FtdiDevicePinFunction.RxLed => "RXLED#",
-            FtdiDevicePinFunction.TxLed => "TXLED#",
-            FtdiDevicePinFunction.TxRxLed => "TX&RXLED#",
-            FtdiDevicePinFunction.Sleep => "SLEEP#",
-            FtdiDevicePinFunction.Clock48Mhz => "CLK48",
-            FtdiDevicePinFunction.Clock24Mhz => "CLK24",
-            FtdiDevicePinFunction.Clock12Mhz => "CLK12",
-            FtdiDevicePinFunction.Clock6Mhz => "CLK6",
-            FtdiDevicePinFunction.IOMode => "IOMODE",
-            FtdiDevicePinFunction.BitbangWrite => "WR#",
-            FtdiDevicePinFunction.BitbangRead => "RD#",
-            FtdiDevicePinFunction.RxF => "RXF#",
+            Ftdi232RDevice.PinFunction.TxdEnable => "TXDEN",
+            Ftdi232RDevice.PinFunction.PowerEnable => "PWREN#",
+            Ftdi232RDevice.PinFunction.RxLed => "RXLED#",
+            Ftdi232RDevice.PinFunction.TxLed => "TXLED#",
+            Ftdi232RDevice.PinFunction.TxRxLed => "TX&RXLED#",
+            Ftdi232RDevice.PinFunction.Sleep => "SLEEP#",
+            Ftdi232RDevice.PinFunction.Clock48Mhz => "CLK48",
+            Ftdi232RDevice.PinFunction.Clock24Mhz => "CLK24",
+            Ftdi232RDevice.PinFunction.Clock12Mhz => "CLK12",
+            Ftdi232RDevice.PinFunction.Clock6Mhz => "CLK6",
+            Ftdi232RDevice.PinFunction.IOMode => "IOMODE",
+            Ftdi232RDevice.PinFunction.BitbangWrite => "WR#",
+            Ftdi232RDevice.PinFunction.BitbangRead => "RD#",
+            Ftdi232RDevice.PinFunction.RxF => "RXF#",
             _ => "(" + ((int)function).ToString() + ")",
         };
     }
