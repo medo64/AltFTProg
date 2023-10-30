@@ -7,18 +7,19 @@ Linux alternative to FT Prog utility.
 ## Usage
 
 Run without arguments to list all devices:
-
-    altftprog
-
+```bash
+sudo altftprog
+```
 
 To apply template (made by FT_Prog) just give file as an argument:
-
-    altftprog template.xml
-
+```bash
+sudo altftprog template.xml
+```
 
 To get more details, add `-v` parameter:
-
-    altftprog -v
+```bash
+sudo altftprog -v
+```
 
 
 ## Setup
