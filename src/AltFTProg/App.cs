@@ -92,10 +92,27 @@ internal static class App {
             Console.WriteLine("  CBUS4 function ......: " + GetPinText(device232R.CBus4Function));
             Console.WriteLine("  High-current IO .....: " + GetBooleanText(device232R.IsHighCurrentIO, "Yes", "No"));
         } else if (device is FtdiXSeriesDevice deviceXSeries) {
+            Console.WriteLine("  Battery charge ......: " + GetBooleanText(deviceXSeries.IsBatteryChargeEnabled, "Enabled", "Disabled"));
+            Console.WriteLine("  Power enable ........: " + GetBooleanText(deviceXSeries.IsPowerEnableForced, "Forced", "Normal"));
+            Console.WriteLine("  Sleep deactivate ....: " + GetBooleanText(deviceXSeries.IsSleepDeactivated, "Yes", "No"));
+            Console.WriteLine("  TXD inverted ........: " + GetBooleanText(deviceXSeries.IsTxdInverted, "Yes", "No"));
+            Console.WriteLine("  RXD inverted ........: " + GetBooleanText(deviceXSeries.IsRxdInverted, "Yes", "No"));
+            Console.WriteLine("  RTS inverted ........: " + GetBooleanText(deviceXSeries.IsRtsInverted, "Yes", "No"));
+            Console.WriteLine("  CTS inverted ........: " + GetBooleanText(deviceXSeries.IsCtsInverted, "Yes", "No"));
+            Console.WriteLine("  DTR inverted ........: " + GetBooleanText(deviceXSeries.IsDtrInverted, "Yes", "No"));
+            Console.WriteLine("  DSR inverted ........: " + GetBooleanText(deviceXSeries.IsDsrInverted, "Yes", "No"));
+            Console.WriteLine("  DCD inverted ........: " + GetBooleanText(deviceXSeries.IsDcdInverted, "Yes", "No"));
+            Console.WriteLine("  RI inverted .........: " + GetBooleanText(deviceXSeries.IsRiInverted, "Yes", "No"));
             Console.WriteLine("  CBUS0 function ......: " + GetPinText(deviceXSeries.CBus0Function));
             Console.WriteLine("  CBUS1 function ......: " + GetPinText(deviceXSeries.CBus1Function));
             Console.WriteLine("  CBUS2 function ......: " + GetPinText(deviceXSeries.CBus2Function));
             Console.WriteLine("  CBUS3 function ......: " + GetPinText(deviceXSeries.CBus3Function));
+            Console.WriteLine("  DBUS slow slew ......: " + GetBooleanText(deviceXSeries.DBusSlowSlew, "Yes", "No"));
+            Console.WriteLine("  DBUS drive current ..: " + deviceXSeries.DBusDriveCurrent.ToString() + " mA");
+            Console.WriteLine("  DBUS schmitt input ..: " + GetBooleanText(deviceXSeries.DBusSchmittInput, "Yes", "No"));
+            Console.WriteLine("  CBUS slow slew ......: " + GetBooleanText(deviceXSeries.CBusSlowSlew, "Yes", "No"));
+            Console.WriteLine("  CBUS drive current ..: " + deviceXSeries.CBusDriveCurrent.ToString() + " mA");
+            Console.WriteLine("  CBUS schmitt input ..: " + GetBooleanText(deviceXSeries.CBusSchmittInput, "Yes", "No"));
         }
         Console.WriteLine("  Checksum ............: " + GetBooleanText(device.IsChecksumValid, "Valid", "Invalid"));
 

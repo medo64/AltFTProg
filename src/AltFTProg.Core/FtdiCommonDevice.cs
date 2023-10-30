@@ -80,4 +80,121 @@ public abstract class FtdiCommonDevice : FtdiDevice {
         }
     }
 
+
+    /// <summary>
+    /// Gets/sets if TXD is inverted.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsTxdInverted {
+        get { return (EepromBytes[11] & 0x01) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x01) | (value ? 0x01 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if RXD is inverted.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsRxdInverted {
+        get { return (EepromBytes[11] & 0x02) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x02) | (value ? 0x02 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if RTS is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsRtsInverted {
+        get {
+            return (EepromBytes[11] & 0x04) != 0;
+        }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x04) | (value ? 0x04 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if CTS is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsCtsInverted {
+        get {
+            return (EepromBytes[11] & 0x08) != 0;
+        }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x08) | (value ? 0x08 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if DTR is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsDtrInverted {
+        get { return (EepromBytes[11] & 0x10) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x10) | (value ? 0x10 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if DSR is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsDsrInverted {
+        get {
+            return (EepromBytes[11] & 0x20) != 0;
+        }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x20) | (value ? 0x20 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if DCD is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsDcdInverted {
+        get { return (EepromBytes[11] & 0x40) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x40) | (value ? 0x40 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if RI is inverted.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsRiInverted {
+        get { return (EepromBytes[11] & 0x80) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x80) | (value ? 0x80 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
 }

@@ -4,7 +4,7 @@ using System;
 /// <summary>
 /// FTDI X series device.
 /// </summary>
-public sealed class FtdiXSeriesDevice : FtdiDevice {
+public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
 
     internal FtdiXSeriesDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize)
         : base(usbDeviceHandle, usbVendorId, usbProductId, type, eepromBytes, eepromSize) {
@@ -72,6 +72,46 @@ public sealed class FtdiXSeriesDevice : FtdiDevice {
 
 
     /// <summary>
+    /// Gets/sets if Battery charge is enabled.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsBatteryChargeEnabled {
+        get { return (EepromBytes[0] & 0x01) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0] = (byte)((EepromBytes[0] & ~0x01) | (value ? 0x01 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if Power enable is forced.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsPowerEnableForced {
+        get { return (EepromBytes[0] & 0x02) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0] = (byte)((EepromBytes[0] & ~0x02) | (value ? 0x02 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if sleep is deactivated.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool IsSleepDeactivated {
+        get { return (EepromBytes[0] & 0x04) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0] = (byte)((EepromBytes[0] & ~0x04) | (value ? 0x04 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+    /// <summary>
     /// Gets/sets function for CBUS0.
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Unsupported pin function value.</exception>
@@ -119,7 +159,6 @@ public sealed class FtdiXSeriesDevice : FtdiDevice {
         }
     }
 
-
     /// <summary>
     /// Gets/sets function for CBUS3.
     /// </summary>
@@ -132,6 +171,90 @@ public sealed class FtdiXSeriesDevice : FtdiDevice {
             var newValue = (int)value;
             if (Enum.IsDefined(typeof(CBusPinFunction), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[29] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+    /// <summary>
+    /// Gets/sets if if DBUS slow slew is used.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool DBusSlowSlew {
+        get { return (EepromBytes[12] & 0x04) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x04) | (value ? 0x04 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets DBUS drive current.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported drive current value (must be either 4, 8, 12, or 16).</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public int DBusDriveCurrent {
+        get { return ((EepromBytes[12] & 0x03) + 1) * 4; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (value is not (4 or 8 or 12 or 16)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported drive current value (must be either 4, 8, 12, or 16)."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x03) | ((value / 4) - 1));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if DBUS uses schmitt input.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool DBusSchmittInput {
+        get { return (EepromBytes[12] & 0x08) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x08) | (value ? 0x08 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+
+    /// <summary>
+    /// Gets/sets if if DBUS slow slew is used.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool CBusSlowSlew {
+        get { return (EepromBytes[12] & 0x40) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x40) | (value ? 0x40 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets CBUS drive current.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Unsupported drive current value (must be either 4, 8, 12, or 16).</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public int CBusDriveCurrent {
+        get { return (((EepromBytes[12] & 0x30) >> 4) + 1) * 4; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (value is not (4 or 8 or 12 or 16)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported drive current value (must be either 4, 8, 12, or 16)."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x30) | (((value / 4) - 1) << 4));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if CBUS uses schmitt input.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool CBusSchmittInput {
+        get { return (EepromBytes[12] & 0x80) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x80) | (value ? 0x80 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }
