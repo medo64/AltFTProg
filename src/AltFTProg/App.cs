@@ -2,6 +2,7 @@
 using System;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.IO;
 using System.Text;
 
 internal static class App {
@@ -32,14 +33,29 @@ internal static class App {
             verboseOption,
         };
         rootCommand.SetHandler(
-            (isVerbose, file) => {
-                Run(isVerbose);
+            (file, isVerbose) => {
+                Run(file, isVerbose);
             },
-            verboseOption, fileArgument);
+            fileArgument, verboseOption);
         rootCommand.Invoke(args);
     }
 
-    private static void Run(bool isVerbose) {
+    private static void Run(FileInfo? file, bool isVerbose) {
+        XmlSimplified? xml = null;
+        if (file != null) {
+            xml = new XmlSimplified(file);
+            if (isVerbose) {
+                Console.WriteLine("Template " + file.FullName);
+                if (isVerbose) {
+                    Console.WriteLine("  Chip type: " + xml.ChipType);
+                    Console.WriteLine("  Properties:");
+                    foreach (var property in xml.Properties) {
+                        Console.WriteLine("    " + property.Key + ": " + property.Value);
+                    }
+                }
+            }
+        }
+
         var devices = FtdiDevice.GetDevices();
         if (devices.Count == 0) {
             Console.Error.WriteLine("No devices found!");
@@ -47,22 +63,29 @@ internal static class App {
         }
 
         foreach (var device in devices) {
+            string deviceTitle;
             if (string.IsNullOrEmpty(device.UsbSerialNumber)) {
-                Console.WriteLine("FTDI " + GetDeviceTypeShortText(device) + " (no serial number)");
+                deviceTitle = "FTDI " + GetDeviceTypeShortText(device) + " (no serial number)";
             } else {
-                Console.WriteLine("FTDI " + GetDeviceTypeShortText(device) + " (" + device.UsbSerialNumber + ")");
+                deviceTitle = "FTDI " + GetDeviceTypeShortText(device) + " (" + device.UsbSerialNumber + ")";
             }
-            if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
+
+            if ((xml != null) && xml.IsMatchingDevice(device)) { deviceTitle += " ⮜"; }
+            Console.WriteLine(deviceTitle);
+            if (isVerbose) {
+                WriteDeviceDetails(device, includeEepromExtras: true);
+            } else {
+                Console.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
+                Console.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
+                Console.WriteLine("  USB Manufacturer ....: " + device.UsbManufacturer);
+                Console.WriteLine("  USB Product .........: " + device.UsbProductDescription);
+                Console.WriteLine("  USB Serial ..........: " + device.UsbSerialNumber);
+
+            }
         }
     }
 
     private static void WriteDeviceDetails(FtdiDevice device, bool includeEepromExtras) {
-        Console.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
-        Console.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
-        Console.WriteLine("  USB Manufacturer ....: " + device.UsbManufacturer);
-        Console.WriteLine("  USB Product .........: " + device.UsbProductDescription);
-        Console.WriteLine("  USB Serial ..........: " + device.UsbSerialNumber);
-
         Console.WriteLine("  Device type .........: " + GetDeviceTypeText(device));
         Console.WriteLine("  EEPROM size .........: " + device.EepromSize.ToString());
 
