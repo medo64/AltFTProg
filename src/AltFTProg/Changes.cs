@@ -116,15 +116,24 @@ internal static class Changes {
                     }
                     break;
 
+                case "USB_String_Descriptors/SerialNumber":
+                    var newSerialNumber = value.Trim();
+                    if (!device.SerialNumber.Equals(newSerialNumber, StringComparison.Ordinal)) {
+                        device.SerialNumber = newSerialNumber;
+                        Output.WriteLine($"  Setting SerialNumber: {newSerialNumber}");
+                        hasModified = true;
+                    }
+                    break;
+
                 case "USB_String_Descriptors/SerialNumberPrefix":
                     serialNumberPrefix = value.Trim();
                     break;
 
                 case "USB_String_Descriptors/SerialNumber_AutoGenerate":
                     if (bool.Parse(value)) {
-                        var newSerialNumber = Helpers.GetRandomSerial(serialNumberPrefix, 6);
-                        device.SerialNumber = newSerialNumber;
-                        Output.WriteLine($"  Setting SerialNumber: {newSerialNumber}");
+                        var newGeneratedSerialNumber = Helpers.GetRandomSerial(serialNumberPrefix, 6);
+                        device.SerialNumber = newGeneratedSerialNumber;
+                        Output.WriteLine($"  Setting SerialNumber: {newGeneratedSerialNumber}");
                         hasModified = true;
                     }
                     break;
