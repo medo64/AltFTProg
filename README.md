@@ -4,6 +4,25 @@ Alternate FT Prog
 Linux alternative to FT Prog utility.
 
 
+## Usage
+
+Run without arguments to list all devices:
+
+    altftprog
+
+
+To apply template (made by FT_Prog) just give file as an argument:
+
+    altftprog template.xml
+
+
+To get more details, add `-v` parameter:
+
+    altftprog -v
+
+
+## Setup
+
 ### Install Libraries
 
 This application requires `libftdi` library. On Ubuntu you can install it using:
