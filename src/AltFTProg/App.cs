@@ -48,9 +48,9 @@ internal static class App {
 
         foreach (var device in devices) {
             if (string.IsNullOrEmpty(device.UsbSerialNumber)) {
-                Console.WriteLine("FTDI Device (no serial number)");
+                Console.WriteLine("FTDI " + GetDeviceTypeShortText(device) + " (no serial number)");
             } else {
-                Console.WriteLine("FTDI Device (" + device.UsbSerialNumber + ")");
+                Console.WriteLine("FTDI " + GetDeviceTypeShortText(device) + " (" + device.UsbSerialNumber + ")");
             }
             if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
         }
@@ -160,6 +160,26 @@ internal static class App {
             FtdiDeviceType.FTXSeries => "FT X Series (" + ((int)type).ToString() + ")",
             _ => "(" + ((int)type).ToString() + ") " + classType,
         };
+    }
+
+    private static string GetDeviceTypeShortText(FtdiDevice device) {
+        if (device is Ftdi232RDevice) {
+            return "232R";
+        } else if (device is FtdiXSeriesDevice) {
+            return "X Series";
+        } else {
+            var type = device.DeviceType;
+            return type switch {
+                FtdiDeviceType.FT232A => "232/245AM",
+                FtdiDeviceType.FT232B => "232/245BM",
+                FtdiDeviceType.FT2232D => "2232D",
+                FtdiDeviceType.FT232R => "232R/245R",
+                FtdiDeviceType.FT2232H => "2232H",
+                FtdiDeviceType.FT232H => "232H",
+                FtdiDeviceType.FTXSeries => "X Series",
+                _ => "(unknown)",
+            };
+        }
     }
 
     private static string GetPinText(Ftdi232RDevice.CBus0PinSignal? function) {
