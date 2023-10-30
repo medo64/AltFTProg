@@ -15,7 +15,7 @@ internal class XmlSimplified {
         var properties = new List<KeyValuePair<string, string>>();
         TraverseNodes(xmlDoc.DocumentElement, properties);
         for (var i = 0; i < properties.Count; i++) {
-            if (properties[i].Key.Equals("Type", StringComparison.OrdinalIgnoreCase)) {
+            if (properties[i].Key.Equals("Chip_Details/Type", StringComparison.OrdinalIgnoreCase)) {
                 chipType = properties[i].Value;
                 properties.RemoveAt(i);
                 break;
@@ -30,10 +30,11 @@ internal class XmlSimplified {
         if (node == null) { return; }
         if (node.NodeType == XmlNodeType.Text) {
             if (node.ParentNode == null) { return; }
+            var parentName = node.ParentNode.ParentNode?.Name ?? "";
             var name = node.ParentNode.Name;
             var value = node.Value;
             if (string.IsNullOrEmpty(value)) { return; }
-            properties.Add(new KeyValuePair<string, string>(name, value));
+            properties.Add(new KeyValuePair<string, string>(parentName + "/" + name, value));
         }
 
         foreach (XmlNode child in node.ChildNodes) {

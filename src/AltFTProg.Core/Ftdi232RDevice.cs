@@ -74,7 +74,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBus0PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBus0PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[20] = (byte)((EepromBytes[20] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -90,7 +90,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBus1PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBus1PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[20] = (byte)((EepromBytes[20] & 0x0F) | (newValue << 4));
             IsChecksumValid = true;  // fixup checksum
         }
@@ -106,7 +106,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBus2PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBus2PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[21] = (byte)((EepromBytes[21] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -122,7 +122,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBus3PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBus3PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[21] = (byte)((EepromBytes[21] & 0x0F) | (newValue << 4));
             IsChecksumValid = true;  // fixup checksum
         }
@@ -138,7 +138,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBus4PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBus4PinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[22] = (byte)((EepromBytes[22] & 0xF0) | newValue);
             IsChecksumValid = true;  // fixup checksum
         }
@@ -150,11 +150,42 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsHighCurrentIO {
+    public bool HighCurrentIO {
         get { return (EepromBytes[0] & 0x04) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[0] = (byte)((EepromBytes[0] & ~0x04) | (value ? 0x04 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if external oscillator will be used.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool ExternalOscillator {
+        get { return (EepromBytes[0] & 0x02) != 0; }
+    }
+
+    /// <summary>
+    /// Gets/sets if D2XX direct driver will be used.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool D2xxDirectDriver {
+        get { return !VirtualComPortDriver; }
+        set { VirtualComPortDriver = !value; }
+    }
+
+    /// <summary>
+    /// Gets/sets if Virtual COM port driver will be used.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool VirtualComPortDriver {
+        get { return (EepromBytes[0] & 0x08) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0] = (byte)((EepromBytes[0] & ~0x08) | (value ? 0x08 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }

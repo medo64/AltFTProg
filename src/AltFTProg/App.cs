@@ -45,12 +45,12 @@ internal static class App {
         if (file != null) {
             xml = new XmlSimplified(file);
             if (isVerbose) {
-                Console.WriteLine("Template " + file.FullName);
+                Output.WriteLine("Template " + file.FullName);
                 if (isVerbose) {
-                    Console.WriteLine("  Chip type: " + xml.ChipType);
-                    Console.WriteLine("  Properties:");
+                    Output.WriteVerboseLine("  Chip type: " + xml.ChipType);
+                    Output.WriteVerboseLine("  Properties:");
                     foreach (var property in xml.Properties) {
-                        Console.WriteLine("    " + property.Key + ": " + property.Value);
+                        Output.WriteVerboseLine("    " + property.Key + ": " + property.Value);
                     }
                 }
             }
@@ -58,7 +58,7 @@ internal static class App {
 
         var devices = FtdiDevice.GetDevices();
         if (devices.Count == 0) {
-            Console.Error.WriteLine("No devices found!");
+            Output.WriteErrorLine("No devices found!");
             Environment.Exit(1);
         }
 
@@ -71,77 +71,86 @@ internal static class App {
             }
 
             if ((xml != null) && xml.IsMatchingDevice(device)) { deviceTitle += " ⮜"; }
-            Console.WriteLine(deviceTitle);
+            Output.WriteLine(deviceTitle);
             if (isVerbose) {
                 WriteDeviceDetails(device, includeEepromExtras: true);
             } else {
-                Console.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
-                Console.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
-                Console.WriteLine("  USB Manufacturer ....: " + device.UsbManufacturer);
-                Console.WriteLine("  USB Product .........: " + device.UsbProductDescription);
-                Console.WriteLine("  USB Serial ..........: " + device.UsbSerialNumber);
+                Output.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
+                Output.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
+                Output.WriteLine("  USB Manufacturer ....: " + device.UsbManufacturer);
+                Output.WriteLine("  USB Product .........: " + device.UsbProductDescription);
+                Output.WriteLine("  USB Serial ..........: " + device.UsbSerialNumber);
+            }
 
+            if ((xml != null) && xml.IsMatchingDevice(device)) {
+                var hasModified = Changes.Apply(device, xml.Properties);
+                if (hasModified) {
+                    device.SaveChanges();
+                    if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
+                }
             }
         }
     }
 
     private static void WriteDeviceDetails(FtdiDevice device, bool includeEepromExtras) {
-        Console.WriteLine("  Device type .........: " + GetDeviceTypeText(device));
-        Console.WriteLine("  EEPROM size .........: " + device.EepromSize.ToString());
+        Output.WriteVerboseLine("  Device type .........: " + GetDeviceTypeText(device));
+        Output.WriteVerboseLine("  EEPROM size .........: " + device.EepromSize.ToString());
 
-        Console.WriteLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
-        Console.WriteLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
-        Console.WriteLine("  Power source ........: " + GetBooleanText(device.SelfPowered, "Self-powered", "Bus-powered"));
-        Console.WriteLine("  Maximum bus power ...: " + device.MaxBusPower.ToString() + " mA");
-        Console.WriteLine("  Remote wakeup .......: " + GetBooleanText(device.RemoteWakeup, "Enabled", "Disabled"));
-        Console.WriteLine("  IO during suspend ...: " + GetBooleanText(device.PulldownPinsInSuspend, "Pulled-down", "Floating"));
-        Console.WriteLine("  Manufacturer ........: " + device.Manufacturer);
-        Console.WriteLine("  Product .............: " + device.ProductDescription);
-        Console.WriteLine("  Serial number enabled: " + GetBooleanText(device.SerialNumberEnabled, "Yes", "No"));
-        Console.WriteLine("  Serial ..............: " + device.SerialNumber);
+        Output.WriteVerboseLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
+        Output.WriteVerboseLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
+        Output.WriteVerboseLine("  Power source ........: " + GetBooleanText(device.SelfPowered, "Self-powered", "Bus-powered"));
+        Output.WriteVerboseLine("  Maximum bus power ...: " + device.MaxBusPower.ToString() + " mA");
+        Output.WriteVerboseLine("  Remote wakeup .......: " + GetBooleanText(device.RemoteWakeupEnabled, "Enabled", "Disabled"));
+        Output.WriteVerboseLine("  IO during suspend ...: " + GetBooleanText(device.PulldownPinsInSuspend, "Pulled-down", "Floating"));
+        Output.WriteVerboseLine("  Manufacturer ........: " + device.Manufacturer);
+        Output.WriteVerboseLine("  Product .............: " + device.ProductDescription);
+        Output.WriteVerboseLine("  Serial number enabled: " + GetBooleanText(device.SerialNumberEnabled, "Yes", "No"));
+        Output.WriteVerboseLine("  Serial ..............: " + device.SerialNumber);
         if (device is Ftdi232RDevice device232R) {
-            Console.WriteLine("  TXD inverted ........: " + GetBooleanText(device232R.TxdInverted, "Yes", "No"));
-            Console.WriteLine("  RXD inverted ........: " + GetBooleanText(device232R.RxdInverted, "Yes", "No"));
-            Console.WriteLine("  RTS inverted ........: " + GetBooleanText(device232R.RtsInverted, "Yes", "No"));
-            Console.WriteLine("  CTS inverted ........: " + GetBooleanText(device232R.CtsInverted, "Yes", "No"));
-            Console.WriteLine("  DTR inverted ........: " + GetBooleanText(device232R.DtrInverted, "Yes", "No"));
-            Console.WriteLine("  DSR inverted ........: " + GetBooleanText(device232R.DsrInverted, "Yes", "No"));
-            Console.WriteLine("  DCD inverted ........: " + GetBooleanText(device232R.DcdInverted, "Yes", "No"));
-            Console.WriteLine("  RI inverted .........: " + GetBooleanText(device232R.RiInverted, "Yes", "No"));
-            Console.WriteLine("  CBUS0 signal ........: " + GetPinText(device232R.CBus0Signal));
-            Console.WriteLine("  CBUS1 signal ........: " + GetPinText(device232R.CBus1Signal));
-            Console.WriteLine("  CBUS2 signal ........: " + GetPinText(device232R.CBus2Signal));
-            Console.WriteLine("  CBUS3 signal ........: " + GetPinText(device232R.CBus3Signal));
-            Console.WriteLine("  CBUS4 signal ........: " + GetPinText(device232R.CBus4Signal));
-            Console.WriteLine("  High-current IO .....: " + GetBooleanText(device232R.IsHighCurrentIO, "Yes", "No"));
+            Output.WriteVerboseLine("  Oscillator ..........: " + GetBooleanText(device232R.ExternalOscillator, "External", "Internal"));
+            Output.WriteVerboseLine("  Driver ..............: " + GetBooleanText(device232R.D2xxDirectDriver, "D2XX Direct", "Virtual COM Port"));
+            Output.WriteVerboseLine("  TXD inverted ........: " + GetBooleanText(device232R.TxdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RXD inverted ........: " + GetBooleanText(device232R.RxdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RTS inverted ........: " + GetBooleanText(device232R.RtsInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  CTS inverted ........: " + GetBooleanText(device232R.CtsInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DTR inverted ........: " + GetBooleanText(device232R.DtrInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DSR inverted ........: " + GetBooleanText(device232R.DsrInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DCD inverted ........: " + GetBooleanText(device232R.DcdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RI inverted .........: " + GetBooleanText(device232R.RiInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  CBUS0 signal ........: " + GetPinText(device232R.CBus0Signal));
+            Output.WriteVerboseLine("  CBUS1 signal ........: " + GetPinText(device232R.CBus1Signal));
+            Output.WriteVerboseLine("  CBUS2 signal ........: " + GetPinText(device232R.CBus2Signal));
+            Output.WriteVerboseLine("  CBUS3 signal ........: " + GetPinText(device232R.CBus3Signal));
+            Output.WriteVerboseLine("  CBUS4 signal ........: " + GetPinText(device232R.CBus4Signal));
+            Output.WriteVerboseLine("  High-current IO .....: " + GetBooleanText(device232R.HighCurrentIO, "Yes", "No"));
         } else if (device is FtdiXSeriesDevice deviceXSeries) {
-            Console.WriteLine("  RS485 echo supression: " + GetBooleanText(deviceXSeries.Rs485EchoSuppression, "Enabled", "Disabled"));
-            Console.WriteLine("  Driver ..............: " + GetBooleanText(deviceXSeries.D2xxDirectDriver, "D2XX Direct", "Virtual COM Port"));
-            Console.WriteLine("  Battery charge ......: " + GetBooleanText(deviceXSeries.BatteryChargeEnable, "Enabled", "Disabled"));
-            Console.WriteLine("  Force power enable ..: " + GetBooleanText(deviceXSeries.ForcePowerEnable, "Forced", "Normal"));
-            Console.WriteLine("  Deactivate sleep ....: " + GetBooleanText(deviceXSeries.DeactivateSleep, "Yes", "No"));
-            Console.WriteLine("  TXD inverted ........: " + GetBooleanText(deviceXSeries.TxdInverted, "Yes", "No"));
-            Console.WriteLine("  RXD inverted ........: " + GetBooleanText(deviceXSeries.RxdInverted, "Yes", "No"));
-            Console.WriteLine("  RTS inverted ........: " + GetBooleanText(deviceXSeries.RtsInverted, "Yes", "No"));
-            Console.WriteLine("  CTS inverted ........: " + GetBooleanText(deviceXSeries.CtsInverted, "Yes", "No"));
-            Console.WriteLine("  DTR inverted ........: " + GetBooleanText(deviceXSeries.DtrInverted, "Yes", "No"));
-            Console.WriteLine("  DSR inverted ........: " + GetBooleanText(deviceXSeries.DsrInverted, "Yes", "No"));
-            Console.WriteLine("  DCD inverted ........: " + GetBooleanText(deviceXSeries.DcdInverted, "Yes", "No"));
-            Console.WriteLine("  RI inverted .........: " + GetBooleanText(deviceXSeries.RiInverted, "Yes", "No"));
-            Console.WriteLine("  CBUS0 signal ........: " + GetPinText(deviceXSeries.CBus0Signal));
-            Console.WriteLine("  CBUS1 signal ........: " + GetPinText(deviceXSeries.CBus1Signal));
-            Console.WriteLine("  CBUS2 signal ........: " + GetPinText(deviceXSeries.CBus2Signal));
-            Console.WriteLine("  CBUS3 signal ........: " + GetPinText(deviceXSeries.CBus3Signal));
-            Console.WriteLine("  DBUS slow slew ......: " + GetBooleanText(deviceXSeries.DBusSlowSlew, "Yes", "No"));
-            Console.WriteLine("  DBUS drive current ..: " + deviceXSeries.DBusDriveCurrent.ToString() + " mA");
-            Console.WriteLine("  DBUS schmitt input ..: " + GetBooleanText(deviceXSeries.DBusSchmittInput, "Yes", "No"));
-            Console.WriteLine("  CBUS slow slew ......: " + GetBooleanText(deviceXSeries.CBusSlowSlew, "Yes", "No"));
-            Console.WriteLine("  CBUS drive current ..: " + deviceXSeries.CBusDriveCurrent.ToString() + " mA");
-            Console.WriteLine("  CBUS schmitt input ..: " + GetBooleanText(deviceXSeries.CBusSchmittInput, "Yes", "No"));
+            Output.WriteVerboseLine("  RS485 echo supression: " + GetBooleanText(deviceXSeries.Rs485EchoSuppression, "Enabled", "Disabled"));
+            Output.WriteVerboseLine("  Driver ..............: " + GetBooleanText(deviceXSeries.D2xxDirectDriver, "D2XX Direct", "Virtual COM Port"));
+            Output.WriteVerboseLine("  Battery charge ......: " + GetBooleanText(deviceXSeries.BatteryChargeEnable, "Enabled", "Disabled"));
+            Output.WriteVerboseLine("  Force power enable ..: " + GetBooleanText(deviceXSeries.ForcePowerEnable, "Forced", "Normal"));
+            Output.WriteVerboseLine("  Deactivate sleep ....: " + GetBooleanText(deviceXSeries.DeactivateSleep, "Yes", "No"));
+            Output.WriteVerboseLine("  TXD inverted ........: " + GetBooleanText(deviceXSeries.TxdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RXD inverted ........: " + GetBooleanText(deviceXSeries.RxdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RTS inverted ........: " + GetBooleanText(deviceXSeries.RtsInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  CTS inverted ........: " + GetBooleanText(deviceXSeries.CtsInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DTR inverted ........: " + GetBooleanText(deviceXSeries.DtrInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DSR inverted ........: " + GetBooleanText(deviceXSeries.DsrInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  DCD inverted ........: " + GetBooleanText(deviceXSeries.DcdInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  RI inverted .........: " + GetBooleanText(deviceXSeries.RiInverted, "Yes", "No"));
+            Output.WriteVerboseLine("  CBUS0 signal ........: " + GetPinText(deviceXSeries.CBus0Signal));
+            Output.WriteVerboseLine("  CBUS1 signal ........: " + GetPinText(deviceXSeries.CBus1Signal));
+            Output.WriteVerboseLine("  CBUS2 signal ........: " + GetPinText(deviceXSeries.CBus2Signal));
+            Output.WriteVerboseLine("  CBUS3 signal ........: " + GetPinText(deviceXSeries.CBus3Signal));
+            Output.WriteVerboseLine("  DBUS slow slew ......: " + GetBooleanText(deviceXSeries.DBusSlowSlew, "Yes", "No"));
+            Output.WriteVerboseLine("  DBUS drive current ..: " + deviceXSeries.DBusDriveCurrent.ToString() + " mA");
+            Output.WriteVerboseLine("  DBUS schmitt input ..: " + GetBooleanText(deviceXSeries.DBusSchmittInput, "Yes", "No"));
+            Output.WriteVerboseLine("  CBUS slow slew ......: " + GetBooleanText(deviceXSeries.CBusSlowSlew, "Yes", "No"));
+            Output.WriteVerboseLine("  CBUS drive current ..: " + deviceXSeries.CBusDriveCurrent.ToString() + " mA");
+            Output.WriteVerboseLine("  CBUS schmitt input ..: " + GetBooleanText(deviceXSeries.CBusSchmittInput, "Yes", "No"));
         }
-        Console.WriteLine("  Checksum ............: " + GetBooleanText(device.IsChecksumValid, "Valid", "Invalid"));
+        Output.WriteVerboseLine("  Checksum ............: " + GetBooleanText(device.IsChecksumValid, "Valid", "Invalid"));
 
-        Console.WriteLine("  EEPROM");
+        Output.WriteVerboseLine("  EEPROM");
         var eepromBytes = device.GetEepromBytes(includeEepromExtras);
         for (var i = 0; i < eepromBytes.Length; i += 16) {
             var sbHex = new StringBuilder();
@@ -159,7 +168,7 @@ internal static class App {
                 sbHex.Append(b.ToString("X2") + " ");
                 sbAscii.Append((b is < 32 or > 126) ? '·' : (char)b);
             }
-            Console.WriteLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
+            Output.WriteVerboseLine("    " + sbHex.ToString() + " " + sbAscii.ToString());
         }
     }
 

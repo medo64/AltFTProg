@@ -155,7 +155,7 @@ public abstract class FtdiDevice {
     /// Gets/sets remote wakeup.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public  virtual bool RemoteWakeup {
+    public  virtual bool RemoteWakeupEnabled {
         get { return (EepromBytes[8] & 0x20) != 0; }
         set { throw new InvalidOperationException("Device not supported."); }
     }

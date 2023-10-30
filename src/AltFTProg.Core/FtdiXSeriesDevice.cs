@@ -158,7 +158,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[26] = (byte)newValue;
             IsChecksumValid = true;  // fixup checksum
         }
@@ -174,7 +174,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[27] = (byte)newValue;
             IsChecksumValid = true;  // fixup checksum
         }
@@ -190,7 +190,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[28] = (byte)newValue;
             IsChecksumValid = true;  // fixup checksum
         }
@@ -206,7 +206,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             var newValue = (int)value;
-            if (Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
+            if (!Enum.IsDefined(typeof(CBusPinSignal), newValue)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported pin function value."); }
             EepromBytes[29] = (byte)newValue;
             IsChecksumValid = true;  // fixup checksum
         }

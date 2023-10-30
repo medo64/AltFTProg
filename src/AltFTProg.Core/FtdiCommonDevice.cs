@@ -45,8 +45,8 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// Gets/sets remote wakeup.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool RemoteWakeup {
-        get { return base.RemoteWakeup; }
+    public override bool RemoteWakeupEnabled {
+        get { return base.RemoteWakeupEnabled; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value ? 0x20 : 0));
