@@ -13,23 +13,10 @@ public abstract class FtdiCommonDevice : FtdiDevice {
 
 
     /// <summary>
-    /// Gets/sets remote wakeup.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool IsRemoteWakeupEnabled {
-        get { return base.IsRemoteWakeupEnabled; }
-        set {
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value ? 0x20 : 0));
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-    /// <summary>
     /// Gets/sets if device is self-powered.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool IsSelfPowered {
+    public override bool SelfPowered {
         get { return (EepromBytes[8] & 0x40) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -43,7 +30,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentOutOfRangeException">Value must be between 0 and 500.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override int MaxPower {  // 2 mA unit
+    public override int MaxBusPower {  // 2 mA unit
         get { return EepromBytes[9] * 2; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -55,10 +42,23 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     }
 
     /// <summary>
+    /// Gets/sets remote wakeup.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public override bool RemoteWakeup {
+        get { return base.RemoteWakeup; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value ? 0x20 : 0));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
     /// Gets/sets if IO pins will be pulled down in USB suspend.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool IsIOPulledDownDuringSuspend {
+    public override bool PulldownPinsInSuspend {
         get { return (EepromBytes[10] & 0x04) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -67,11 +67,12 @@ public abstract class FtdiCommonDevice : FtdiDevice {
         }
     }
 
+
     /// <summary>
     /// Gets/sets if serial number will be reported by device.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool IsSerialNumberEnabled {
+    public override bool SerialNumberEnabled {
         get { return (EepromBytes[10] & 0x08) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -85,7 +86,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// Gets/sets if TXD is inverted.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsTxdInverted {
+    public bool TxdInverted {
         get { return (EepromBytes[11] & 0x01) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -98,7 +99,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// Gets/sets if RXD is inverted.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsRxdInverted {
+    public bool RxdInverted {
         get { return (EepromBytes[11] & 0x02) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -112,7 +113,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsRtsInverted {
+    public bool RtsInverted {
         get {
             return (EepromBytes[11] & 0x04) != 0;
         }
@@ -128,7 +129,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsCtsInverted {
+    public bool CtsInverted {
         get {
             return (EepromBytes[11] & 0x08) != 0;
         }
@@ -144,7 +145,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsDtrInverted {
+    public bool DtrInverted {
         get { return (EepromBytes[11] & 0x10) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -158,7 +159,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsDsrInverted {
+    public bool DsrInverted {
         get {
             return (EepromBytes[11] & 0x20) != 0;
         }
@@ -174,7 +175,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsDcdInverted {
+    public bool DcdInverted {
         get { return (EepromBytes[11] & 0x40) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
@@ -188,7 +189,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public bool IsRiInverted {
+    public bool RiInverted {
         get { return (EepromBytes[11] & 0x80) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }

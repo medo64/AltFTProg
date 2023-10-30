@@ -47,32 +47,32 @@ public abstract class FtdiDevice {
     /// </summary>
     public string UsbManufacturer {
         get {
-            if (_usbManufacturer == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProduct, out _usbSerial); }
+            if (_usbManufacturer == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProductDescription, out _usbSerialNumber); }
             return _usbManufacturer;
         }
     }
 
-    private string? _usbProduct;
+    private string? _usbProductDescription;
     /// <summary>
     /// Gets USB device product.
     /// This is read from the device and not from the EEPROM.
     /// </summary>
-    public string UsbProduct {
+    public string UsbProductDescription {
         get {
-            if (_usbProduct == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProduct, out _usbSerial); }
-            return _usbProduct;
+            if (_usbProductDescription == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProductDescription, out _usbSerialNumber); }
+            return _usbProductDescription;
         }
     }
 
-    private string? _usbSerial;
+    private string? _usbSerialNumber;
     /// <summary>
     /// Gets USB device serial number.
     /// This is read from the device and not from the EEPROM.
     /// </summary>
-    public string UsbSerial {
+    public string UsbSerialNumber {
         get {
-            if (_usbSerial == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProduct, out _usbSerial); }
-            return _usbSerial;
+            if (_usbSerialNumber == null) { GetUsbStrings(UsbDeviceHandle, out _usbManufacturer, out _usbProductDescription, out _usbSerialNumber); }
+            return _usbSerialNumber;
         }
     }
 
@@ -126,6 +126,51 @@ public abstract class FtdiDevice {
 
 
     /// <summary>
+    /// Gets/sets if device is bus-powered.
+    /// </summary>
+    public bool BusPowered {
+        get { return !SelfPowered; }
+        set { SelfPowered = !value; }
+    }
+
+    /// <summary>
+    /// Gets/sets if device is self-powered.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool SelfPowered {
+        get { return (EepromBytes[8] & 0x40) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
+    /// Gets/sets device power requirement.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual int MaxBusPower {
+        get { return EepromBytes[9] * 2; }  // 2 mA unit
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
+    /// Gets/sets remote wakeup.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public  virtual bool RemoteWakeup {
+        get { return (EepromBytes[8] & 0x20) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
+    /// Gets/sets if IO pins will be pulled down in USB suspend.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool PulldownPinsInSuspend {
+        get { return (EepromBytes[10] & 0x04) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+
+    /// <summary>
     /// Gets/sets device manufacturer name.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported.</exception>
@@ -141,7 +186,7 @@ public abstract class FtdiDevice {
     /// Gets/sets device product name.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual string Product {
+    public virtual string ProductDescription {
         get {
             Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out var product, out _);
             return product;
@@ -150,68 +195,23 @@ public abstract class FtdiDevice {
     }
 
     /// <summary>
+    /// Gets/sets if serial number will be reported by device.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual bool SerialNumberEnabled {
+        get { return (EepromBytes[10] & 0x08) != 0; }
+        set { throw new InvalidOperationException("Device not supported."); }
+    }
+
+    /// <summary>
     /// Gets/sets device serial number.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual string Serial {
+    public virtual string SerialNumber {
         get {
             Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out _, out var serial);
             return serial;
         }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets remote wakeup.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public  virtual bool IsRemoteWakeupEnabled {
-        get { return (EepromBytes[8] & 0x20) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets if device is self-powered.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool IsSelfPowered {
-        get { return (EepromBytes[8] & 0x40) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets if device is bus-powered.
-    /// </summary>
-    public bool IsBusPowered {
-        get { return !IsSelfPowered; }
-        set { IsSelfPowered = !value; }
-    }
-
-    /// <summary>
-    /// Gets/sets device power requirement.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual int MaxPower {
-        get { return EepromBytes[9] * 2; }  // 2 mA unit
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-
-    /// <summary>
-    /// Gets/sets if IO pins will be pulled down in USB suspend.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool IsIOPulledDownDuringSuspend {
-        get { return (EepromBytes[10] & 0x04) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets if serial number will be reported by device.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool IsSerialNumberEnabled {
-        get { return (EepromBytes[10] & 0x08) != 0; }
         set { throw new InvalidOperationException("Device not supported."); }
     }
 
