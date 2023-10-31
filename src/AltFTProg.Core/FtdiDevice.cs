@@ -386,19 +386,19 @@ public abstract class FtdiDevice {
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
         try {
-            var sbManufacturer = new StringBuilder(256);
-            var sbDescription = new StringBuilder(256);
-            var sbSerial = new StringBuilder(256);
+            var manufacturerBytes = new byte[128];
+            var descriptionBytes = new byte[128];
+            var serialBytes = new byte[128];
 
             var errorCode = LibFtdi.ftdi_usb_get_strings(ftdi, usbDeviceHandle,
-                sbManufacturer, sbManufacturer.Capacity,
-                sbDescription, sbDescription.Capacity,
-                sbSerial, sbSerial.Capacity);
+                manufacturerBytes, manufacturerBytes.Length,
+                descriptionBytes, descriptionBytes.Length,
+                serialBytes, serialBytes.Length);
             ThrowIfError(ftdi, "ftdi_usb_get_strings", errorCode);
 
-            manufacturer = sbManufacturer.ToString();
-            description = sbDescription.ToString();
-            serial = sbSerial.ToString();
+            manufacturer = Encoding.UTF8.GetString(manufacturerBytes);
+            description = Encoding.UTF8.GetString(descriptionBytes);
+            serial = Encoding.UTF8.GetString(serialBytes);
         } finally {
             LibFtdi.ftdi_free(ftdi);
         }

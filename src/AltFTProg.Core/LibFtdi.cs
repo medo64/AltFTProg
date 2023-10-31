@@ -140,16 +140,16 @@ internal static class LibFtdi {
         IntPtr ftdi
     );
 
-    [DllImport("libftdi.so")]
+    [DllImport("libftdi.so", CharSet = CharSet.Unicode)]
     [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_usb_get_strings(
         IntPtr ftdi,
         IntPtr dev,
-        [MarshalAs(UnmanagedType.LPStr)] StringBuilder manufacturer,
+        [Out] byte[] manufacturer,
         int mnf_len,
-        [MarshalAs(UnmanagedType.LPStr)] StringBuilder description,
+        [Out] byte[] description,
         int desc_len,
-        [MarshalAs(UnmanagedType.LPStr)] StringBuilder serial,
+        [Out] byte[] serial,
         int serial_len
     );
 
