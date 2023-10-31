@@ -110,10 +110,27 @@ internal static class Helpers {
         }
     }
 
-    internal static ushort GetChecksum(byte[] eeprom, int eepromSize, FtdiDeviceType device) {
+    internal static ushort GetChecksum(byte[] eeprom, int eepromSize) {
+        if (eepromSize == 128) {
+            return GetChecksum128(eeprom, eepromSize);
+        } else {
+            return GetChecksum256(eeprom, eepromSize);
+        }
+    }
+
+    internal static ushort GetChecksum128(byte[] eeprom, int eepromSize) {
         UInt16 crc = 0xAAAA;
         for (var i = 0; i < eepromSize - 2; i += 2) {
-            if ((device == FtdiDeviceType.FTXSeries) && (i == 36)) { i = 128; }
+            crc ^= (UInt16)(eeprom[i] | (eeprom[i + 1] << 8));
+            crc = (UInt16)((crc << 1) | (crc >> 15));
+        }
+        return crc;
+    }
+
+    internal static ushort GetChecksum256(byte[] eeprom, int eepromSize) {
+        UInt16 crc = 0xAAAA;
+        for (var i = 0; i < eepromSize - 2; i += 2) {
+            if (i == 36) { i = 128; }
             crc ^= (UInt16)(eeprom[i] | (eeprom[i + 1] << 8));
             crc = (UInt16)((crc << 1) | (crc >> 15));
         }

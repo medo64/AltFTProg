@@ -224,12 +224,12 @@ public abstract class FtdiDevice {
     public bool IsChecksumValid {
         get {
             var eepromChecksum = (UInt16)(EepromBytes[EepromSize - 1] << 8 | EepromBytes[EepromSize - 2]);
-            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize, DeviceType);
+            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize);
             return (eepromChecksum == checksum);
         }
         set {
             if (value == false) { throw new ArgumentException("Checksum validity cannot be set to false.", nameof(value)); }
-            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize, DeviceType);
+            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize);
             EepromBytes[EepromSize - 2] = (byte)(checksum & 0xFF);
             EepromBytes[EepromSize - 1] = (byte)(checksum >> 8);
         }
