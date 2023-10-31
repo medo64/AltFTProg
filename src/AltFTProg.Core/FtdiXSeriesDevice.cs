@@ -221,7 +221,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         get { return (EepromBytes[12] & 0x04) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x04) | (value ? 0x04 : 0));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x04) | (value ? 0x04 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -236,7 +236,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             if (value is not (4 or 8 or 12 or 16)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported drive current value (must be either 4, 8, 12, or 16)."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x03) | ((value / 4) - 1));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x03) | ((value / 4) - 1));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -249,7 +249,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         get { return (EepromBytes[12] & 0x08) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x08) | (value ? 0x08 : 0));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x08) | (value ? 0x08 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -263,7 +263,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         get { return (EepromBytes[12] & 0x40) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x40) | (value ? 0x40 : 0));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x40) | (value ? 0x40 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -278,7 +278,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
             if (value is not (4 or 8 or 12 or 16)) { throw new ArgumentOutOfRangeException(nameof(value), "Unsupported drive current value (must be either 4, 8, 12, or 16)."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x30) | (((value / 4) - 1) << 4));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x30) | (((value / 4) - 1) << 4));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -291,7 +291,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         get { return (EepromBytes[12] & 0x80) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[12] = (byte)((EepromBytes[0] & ~0x80) | (value ? 0x80 : 0));
+            EepromBytes[12] = (byte)((EepromBytes[12] & ~0x80) | (value ? 0x80 : 0));
             IsChecksumValid = true;  // fixup checksum
         }
     }
