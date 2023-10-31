@@ -28,19 +28,27 @@ internal static class App {
             IsRequired = false,
         };
 
+        var fixChecksumOption = new Option<bool>(
+            aliases: new[] { "--fix-checksum" },
+            description: "Forces checksum fixup") {
+            Arity = ArgumentArity.Zero,
+            IsRequired = false,
+        };
+
         var rootCommand = new RootCommand() {
             fileArgument,
             verboseOption,
+            fixChecksumOption,
         };
         rootCommand.SetHandler(
-            (file, isVerbose) => {
-                Run(file, isVerbose);
+            (file, isVerbose, fixChecksum) => {
+                Run(file, isVerbose, fixChecksum);
             },
-            fileArgument, verboseOption);
+            fileArgument, verboseOption, fixChecksumOption);
         rootCommand.Invoke(args);
     }
 
-    private static void Run(FileInfo? file, bool isVerbose) {
+    private static void Run(FileInfo? file, bool isVerbose, bool fixChecksum) {
         XmlSimplified? xml = null;
         if (file != null) {
             xml = new XmlSimplified(file);
@@ -83,6 +91,7 @@ internal static class App {
             }
 
             if ((xml != null) && xml.IsMatchingDevice(device)) {
+                if (fixChecksum) { device.IsChecksumValid = true; }
                 var hasModified = Changes.Apply(device, xml.Properties);
                 if (hasModified) {
                     device.SaveChanges();
