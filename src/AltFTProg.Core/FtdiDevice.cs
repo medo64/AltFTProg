@@ -2,6 +2,7 @@ namespace AltFTProg;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
 using AltFTProg.NativeMethods;
@@ -167,7 +168,7 @@ public abstract class FtdiDevice {
     /// Gets/sets remote wakeup.
     /// </summary>
     /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public  virtual bool RemoteWakeupEnabled {
+    public virtual bool RemoteWakeupEnabled {
         get { return (EepromBytes[8] & 0x20) != 0; }
         set { throw new InvalidOperationException("Device not supported."); }
     }
@@ -434,10 +435,10 @@ public abstract class FtdiDevice {
         if (errorCode < 0) {
             var errorPointer = LibFtdi.ftdi_get_error_string(ftdi);
             if (errorPointer == IntPtr.Zero) {
-                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ".");
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString(CultureInfo.InvariantCulture) + ".");
             } else {
                 var errorText = Marshal.PtrToStringUTF8(errorPointer);
-                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString() + ": " + errorText);
+                throw new InvalidOperationException(errorSource + " failed with error code " + errorCode.ToString(CultureInfo.InvariantCulture) + ": " + errorText);
             }
         }
     }
