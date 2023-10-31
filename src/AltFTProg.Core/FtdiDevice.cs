@@ -281,7 +281,7 @@ public abstract class FtdiDevice {
             try {
                 ThrowIfError(ftdi, "ftdi_write_eeprom", LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes));
             } finally {
-                LibFtdi.ftdi_usb_close(ftdi);
+                var _ = LibFtdi.ftdi_usb_close(ftdi);
             }
         } finally {
             LibFtdi.ftdi_free(ftdi);
@@ -423,7 +423,7 @@ public abstract class FtdiDevice {
                 Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, eepromBytes.Length);
                 return eepromBytes;
             } finally {
-                LibFtdi.ftdi_usb_close(ftdi);
+                var _ = LibFtdi.ftdi_usb_close(ftdi);
             }
         } finally {
             LibFtdi.ftdi_free(ftdi);
