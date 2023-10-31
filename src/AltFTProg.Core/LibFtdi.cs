@@ -94,20 +94,24 @@ internal static class LibFtdi {
 
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern void ftdi_free(
         IntPtr ftdi
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern IntPtr ftdi_new(
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern void ftdi_list_free(
         ref IntPtr devlist
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_read_eeprom_getsize(
         IntPtr ftdi,
         [Out] byte[] eeprom,
@@ -115,12 +119,14 @@ internal static class LibFtdi {
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_write_eeprom(
         IntPtr ftdi,
         byte[] eeprom
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_usb_find_all(
         IntPtr ftdi,
         ref IntPtr devlist,
@@ -129,11 +135,13 @@ internal static class LibFtdi {
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_usb_close(
         IntPtr ftdi
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_usb_get_strings(
         IntPtr ftdi,
         IntPtr dev,
@@ -146,12 +154,14 @@ internal static class LibFtdi {
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern int ftdi_usb_open_dev(
         IntPtr ftdi,
         IntPtr dev
     );
 
     [DllImport("libftdi.so")]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
     public static extern IntPtr ftdi_get_error_string(
         IntPtr ftdi
     );
