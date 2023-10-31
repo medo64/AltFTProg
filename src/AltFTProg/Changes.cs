@@ -602,7 +602,7 @@ internal static class Changes {
             "BitBang WR#" => Ftdi232RDevice.CBus0PinSignal.BitBangWr,
             "BitBang RD#" => Ftdi232RDevice.CBus0PinSignal.BitBangRd,
             "RXF#" => Ftdi232RDevice.CBus0PinSignal.RxF,
-            _ => Ftdi232RDevice.CBus0PinSignal.TxdEnable,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
@@ -622,7 +622,7 @@ internal static class Changes {
             "BitBang WR#" => Ftdi232RDevice.CBus1PinSignal.BitBangWr,
             "BitBang RD#" => Ftdi232RDevice.CBus1PinSignal.BitBangRd,
             "TXE#" => Ftdi232RDevice.CBus1PinSignal.TxE,
-            _ => Ftdi232RDevice.CBus1PinSignal.TxdEnable,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
@@ -642,7 +642,7 @@ internal static class Changes {
             "BitBang WR#" => Ftdi232RDevice.CBus2PinSignal.BitBangWr,
             "BitBang RD#" => Ftdi232RDevice.CBus2PinSignal.BitBangRd,
             "RD#" => Ftdi232RDevice.CBus2PinSignal.Rd,
-            _ => Ftdi232RDevice.CBus2PinSignal.TxdEnable,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
@@ -662,7 +662,7 @@ internal static class Changes {
             "BitBang WR#" => Ftdi232RDevice.CBus3PinSignal.BitBangWr,
             "BitBang RD#" => Ftdi232RDevice.CBus3PinSignal.BitBangRd,
             "WR#" => Ftdi232RDevice.CBus3PinSignal.Wr,
-            _ => Ftdi232RDevice.CBus3PinSignal.TxdEnable,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
@@ -678,15 +678,15 @@ internal static class Changes {
             "CLK24" => Ftdi232RDevice.CBus4PinSignal.Clock24Mhz,
             "CLK12" => Ftdi232RDevice.CBus4PinSignal.Clock12Mhz,
             "CLK6" => Ftdi232RDevice.CBus4PinSignal.Clock6Mhz,
-            _ => Ftdi232RDevice.CBus4PinSignal.TxdEnable,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
     private static FtdiXSeriesDevice.CBusPinSignal ParseCBus4FTXSeriesSignal(string text) {
         return text switch {
             "Tristate" => FtdiXSeriesDevice.CBusPinSignal.Tristate,
-            "RXLED#" => FtdiXSeriesDevice.CBusPinSignal.RxLed,
-            "TXLED#" => FtdiXSeriesDevice.CBusPinSignal.TxLed,
+            "RXLED" => FtdiXSeriesDevice.CBusPinSignal.RxLed,
+            "TXLED" => FtdiXSeriesDevice.CBusPinSignal.TxLed,
             "TX&RXLED#" => FtdiXSeriesDevice.CBusPinSignal.TxRxLed,
             "PWREN#" => FtdiXSeriesDevice.CBusPinSignal.PwrEn,
             "SLEEP#" => FtdiXSeriesDevice.CBusPinSignal.Sleep,
@@ -706,7 +706,7 @@ internal static class Changes {
             "BitBang RD#" => FtdiXSeriesDevice.CBusPinSignal.BitBangRd,
             "Time_Stamp" => FtdiXSeriesDevice.CBusPinSignal.TimeStamp,
             "Keep_Awake#" => FtdiXSeriesDevice.CBusPinSignal.KeepAwake,
-            _ => FtdiXSeriesDevice.CBusPinSignal.TxdEn,
+            _ => throw new InvalidOperationException($"Unknown CBus signal: {text}"),
         };
     }
 
