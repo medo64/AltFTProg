@@ -279,7 +279,12 @@ public abstract class FtdiDevice {
             ThrowIfError(ftdi, "ftdi_usb_open_dev", LibFtdi.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
-                ThrowIfError(ftdi, "ftdi_write_eeprom", LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes));
+                for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
+                    Console.WriteLine(i);
+                    var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
+                    var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
+                    ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
+                }
             } finally {
                 var _ = LibFtdi.ftdi_usb_close(ftdi);
             }

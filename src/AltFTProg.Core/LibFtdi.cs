@@ -120,9 +120,10 @@ internal static class LibFtdi {
 
     [DllImport("libftdi.so")]
     [DefaultDllImportSearchPaths(DllImportSearchPath.SafeDirectories)]
-    public static extern int ftdi_write_eeprom(
+    public static extern int ftdi_write_eeprom_location(
         IntPtr ftdi,
-        byte[] eeprom
+        int eeprom_addr,
+        ushort eeprom_val
     );
 
     [DllImport("libftdi.so")]
