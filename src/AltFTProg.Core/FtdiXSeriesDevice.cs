@@ -318,7 +318,7 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
         TxLed = 2,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 3,
 

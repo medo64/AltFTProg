@@ -217,7 +217,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         TxLed = 3,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 4,
 
@@ -294,7 +294,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         TxLed = 3,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 4,
 
@@ -371,7 +371,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         TxLed = 3,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 4,
 
@@ -448,7 +448,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         TxLed = 3,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 4,
 
@@ -525,7 +525,7 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         TxLed = 3,
 
         /// <summary>
-        /// TX&RXLED# function.
+        /// TX&amp;RXLED# function.
         /// </summary>
         TxRxLed = 4,
 

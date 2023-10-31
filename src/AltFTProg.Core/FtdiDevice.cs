@@ -11,7 +11,16 @@ using AltFTProg.NativeMethods;
 /// </summary>
 public abstract class FtdiDevice {
 
-    internal protected FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
+    /// <summary>
+    /// Creates a new instance.
+    /// </summary>
+    /// <param name="usbDeviceHandle">LibUsb device handle.</param>
+    /// <param name="usbVendorId">Vendor ID as retrieved from USB.</param>
+    /// <param name="usbProductId">Product ID as retrieved from USB.</param>
+    /// <param name="type">Assumed device type.</param>
+    /// <param name="eepromBytes">EEPROM bytes.</param>
+    /// <param name="eepromSize">Size of base EEPROM.</param>
+    private protected FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
         UsbDeviceHandle = usbDeviceHandle;
         UsbVendorId = usbVendorId;
         UsbProductId = usbProductId;
@@ -23,7 +32,10 @@ public abstract class FtdiDevice {
 
     private readonly IntPtr UsbDeviceHandle;
 
-    protected readonly byte[] EepromBytes;
+    /// <summary>
+    /// EEPROM bytes.
+    /// </summary>
+    private protected readonly byte[] EepromBytes;
 
 
     #region USB Properties

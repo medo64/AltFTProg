@@ -5,6 +5,11 @@ namespace AltFTProg;
 /// </summary>
 public enum FtdiDeviceType {
     /// <summary>
+    /// Empty device.
+    /// </summary>
+    Empty = 0,
+
+    /// <summary>
     /// FT232/245AM (0403:6001).
     /// </summary>
     FT232A = 512,
