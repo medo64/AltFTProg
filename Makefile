@@ -52,11 +52,11 @@ package: clean release
 	@chmod 755 $(PACKAGE_DIR)/DEBIAN/config $(PACKAGE_DIR)/DEBIAN/p*inst $(PACKAGE_DIR)/DEBIAN/p*rm
 	@install -d $(PACKAGE_DIR)/opt/ftprog2/
 	@install bin/ftprog2 $(PACKAGE_DIR)/opt/ftprog2/
-	@strip $(PACKAGE_DIR)/opt/ftprog2/ftprog2
+	@install -m 644 bin/ftprog2.pdb $(PACKAGE_DIR)/opt/ftprog2/
 	@fakeroot dpkg-deb -Z gzip --build $(PACKAGE_DIR)/ > /dev/null
 	@cp /tmp/$(PACKAGE_NAME).deb dist/
 	@$(RM) -r $(PACKAGE_DIR)/
-	-@lintian --suppress-tags dir-or-file-in-opt,no-changelog dist/$(PACKAGE_NAME).deb
+	-@lintian --suppress-tags dir-or-file-in-opt,no-changelog,unstripped-binary-or-object dist/$(PACKAGE_NAME).deb
 	@echo Output at dist/$(PACKAGE_NAME).deb
 
 preview: docs/man/ftprog2.1
