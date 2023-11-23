@@ -1,6 +1,7 @@
 namespace AltFTProg;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -318,7 +319,7 @@ public abstract class FtdiDevice {
         return GetDevices(new KeyValuePair<int, int>[] { new(vendorId, productId) });
     }
 
-    private static IReadOnlyCollection<FtdiDevice> GetDevices(IEnumerable<KeyValuePair<int, int>> vidPids) {
+    private static ReadOnlyCollection<FtdiDevice> GetDevices(IEnumerable<KeyValuePair<int, int>> vidPids) {
         var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
