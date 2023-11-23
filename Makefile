@@ -6,7 +6,7 @@ endif
 
 
 DIST_NAME := ftprog2
-DIST_VERSION := 0.1
+DIST_VERSION := $(shell cat src/AltFTProg/AltFTProg.csproj | grep "<Version>" | sed 's^</\?Version>^^g' | xargs)
 
 MAN_DATE := $(shell date +'%d %b %Y')
 
