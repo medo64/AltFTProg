@@ -2,34 +2,37 @@ namespace AltFTProgGui;
 using System;
 using System.Collections.Generic;
 using System.Threading;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using AltFTProg;
 
 public partial class MainWindow : Window {
     public MainWindow() {
         InitializeComponent();
+
+        bool activatedOnce = false;
+        Activated += delegate {
+            if (activatedOnce) { return; }
+            activatedOnce = true;
+
+        };
     }
 
     protected override void OnLoaded(RoutedEventArgs e) {
         base.OnLoaded(e);
+
         Helpers.SetToolbarIcons(this, grid,
                                (imgRefresh, "Refresh"),
                                (imgProgram, "DataProgram"),
                                (imgLoadTemplate, "FileOpen"),
                                (imgApp, "App"));
+
+        OnMenuRefresh(this, new RoutedEventArgs());
     }
 
     protected override void OnOpened(EventArgs e) {
         base.OnOpened(e);
-        OnMenuRefresh(this, new RoutedEventArgs());
     }
 
 
