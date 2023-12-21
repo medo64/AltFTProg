@@ -4,8 +4,11 @@ using System.Collections.Generic;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Threading;
 using AltFTProg;
+using Avalonia.Media;
+using Avalonia.Input;
 
 public partial class MainWindow : Window {
     public MainWindow() {
@@ -22,11 +25,11 @@ public partial class MainWindow : Window {
     protected override void OnLoaded(RoutedEventArgs e) {
         base.OnLoaded(e);
 
-        Helpers.SetToolbarIcons(this, grid,
-                               (imgRefresh, "Refresh"),
-                               (imgProgram, "DataProgram"),
+        Helpers.SetToolbarIcons(this, mnu,
+                               (imgRefresh,      "Refresh"),
+                               (imgProgram,      "DataProgram"),
                                (imgLoadTemplate, "FileOpen"),
-                               (imgApp, "App"));
+                               (imgApp,          "App"));
 
         OnMenuRefresh(this, new RoutedEventArgs());
     }
@@ -40,50 +43,74 @@ public partial class MainWindow : Window {
 
     public void OnMenuDeviceChanged(object sender, SelectionChangedEventArgs e) {
         if (mnuProgram == null) { return; }
-        var isEnabled = (cmbDevice.SelectedItem is DeviceItem);
+
+        var deviceItem = mnuDevice.SelectedItem as DeviceItem;
+        var isEnabled = (deviceItem != null);
         mnuProgram.IsEnabled = isEnabled;
         mnuLoadTemplate.IsEnabled = isEnabled;
+
+        if (tabMain == null) { return; }
+        PopulateDevice(tabMain, deviceItem?.Device);
     }
 
     public void OnMenuRefresh(object sender, RoutedEventArgs e) {
-        cmbDevice.Items.Clear();
-        cmbDevice.Items.Add("Detecting FTDI devices...");
-        cmbDevice.SelectedIndex = 0;
-        cmbDevice.IsEnabled = false;
+        mnu.IsEnabled = false;
+        Cursor = new Cursor(StandardCursorType.Wait);
+
+        mnuDevice.Items.Clear();
+        mnuDevice.Items.Add("Detecting FTDI devices...");
+        mnuDevice.SelectedIndex = 0;
+        mnuDevice.IsEnabled = false;
 
         ThreadPool.QueueUserWorkItem((s) => {
             try {
                 var devices = FtdiDevice.GetDevices();
                 if (devices.Count == 0) {
-                    cmbDevice.Items.Clear();
-                    cmbDevice.Items.Add("No FTDI devices found");
-                    cmbDevice.SelectedIndex = 0;
+                    mnuDevice.Items.Clear();
+                    mnuDevice.Items.Add("No FTDI devices found");
+                    mnuDevice.SelectedIndex = 0;
                 } else {
                     var deviceItems = new List<DeviceItem>();
                     foreach (var device in devices) {
                         deviceItems.Add(new DeviceItem(device));
                     }
                     Dispatcher.UIThread.Post(() => {
-                        cmbDevice.Items.Clear();
+                        mnuDevice.Items.Clear();
                         foreach (var deviceItem in deviceItems) {
-                            cmbDevice.Items.Add(deviceItem);
+                            mnuDevice.Items.Add(deviceItem);
                         }
-                        cmbDevice.SelectedIndex = 0;
-                        cmbDevice.IsEnabled = true;
+                        mnuDevice.SelectedIndex = 0;
+                        mnuDevice.IsEnabled = true;
                     });
                 }
             } catch (InvalidOperationException) {
                 Dispatcher.UIThread.Post(() => {
-                    cmbDevice.Items.Clear();
-                    cmbDevice.Items.Add("Error accessing FTDI devices");
-                    cmbDevice.SelectedIndex = 0;
+                    mnuDevice.Items.Clear();
+                    mnuDevice.Items.Add("Error accessing FTDI devices");
+                    mnuDevice.SelectedIndex = 0;
                 });
             }
+
+            Dispatcher.UIThread.Post(() => {
+                mnu.IsEnabled = true;
+                Cursor = Cursor.Default;
+            });
         });
     }
 
     public void OnMenuProgram(object sender, RoutedEventArgs e) {
-        Console.WriteLine(DesktopScaling);
+        if (mnuDevice.SelectedItem is DeviceItem deviceItem) {
+            mnu.IsEnabled = false;
+            Cursor = new Cursor(StandardCursorType.Wait);
+
+            ThreadPool.QueueUserWorkItem((s) => {
+                deviceItem.Device.SaveChanges();
+                Dispatcher.UIThread.Post(() => {
+                    mnu.IsEnabled = true;
+                    Cursor = Cursor.Default;
+                });
+            });
+        }
     }
 
     public void OnMenuLoadTemplate(object sender, RoutedEventArgs e) {
@@ -108,5 +135,41 @@ public partial class MainWindow : Window {
     }
 
     #endregion Menu
+
+
+    private static void PopulateDevice(TabControl tabs, FtdiDevice? device) {
+        tabs.Items.Clear();
+
+        if (device != null) {
+            if (device is Ftdi232RDevice ft232rDevice) {
+                new FT232RContent(ft232rDevice).Populate(tabs);
+            } else {
+                var stack = new StackPanel() {
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                stack.Children.Add(new Label() {
+                    Content = "Device not supported",
+                    HorizontalAlignment = HorizontalAlignment.Center
+                });
+                stack.Children.Add(new Label() {
+                    Content = device.DeviceType,
+                    FontWeight = FontWeight.Bold,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                });
+                stack.Children.Add(new Label() {
+                    Content = device.UsbVendorId.ToString("X4") + ":" + device.UsbProductId.ToString("X4"),
+                    HorizontalAlignment = HorizontalAlignment.Center
+                });
+                stack.Children.Add(new Label() { Content = " " });
+                tabs.Items.Add(
+                    new TabItem() {
+                        Header = "",
+                        Content = stack
+                    }
+                );
+            }
+       }
+    }
 
 }

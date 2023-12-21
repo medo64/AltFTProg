@@ -2,16 +2,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
         x:Class="AltFTProgGui.MainWindow"
         Background="{DynamicResource SystemChromeMediumColor}"
         MinWidth="600" MinHeight="400"
+        Width="700" Height="600"
         Icon="Assets/App.ico"
         Title="Alt FT_Prog">
 
     <DockPanel>
         <!-- Toolbar -->
-        <Grid Name="grid" DockPanel.Dock="Top" ColumnDefinitions="Auto, Auto, *, Auto" Background="{DynamicResource SystemChromeMediumColor}">
+        <Grid Name="mnu" DockPanel.Dock="Top" ColumnDefinitions="Auto, Auto, *, Auto" Background="{DynamicResource SystemChromeMediumColor}">
             <Grid.Styles>
                 <Style Selector="Button">
                     <Setter Property="Background" Value="Transparent" />
@@ -63,10 +64,10 @@
             </Grid.Styles>
 
             <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
-                <ComboBox Name="cmbDevice" Width="300" ToolTip.Tip="Selected FTDI device" IsEnabled="false" SelectedIndex="0" SelectionChanged="OnMenuDeviceChanged">
+                <ComboBox Name="mnuDevice" Width="300" ToolTip.Tip="Selected FTDI device" IsEnabled="false" SelectedIndex="0" SelectionChanged="OnMenuDeviceChanged">
                     <ComboBoxItem>Detecting FTDI devices...</ComboBoxItem>
                 </ComboBox>
-                <Button Click="OnMenuRefresh" ToolTip.Tip="Refresh list of devices">
+                <Button Name="mnuRefresh" Click="OnMenuRefresh" ToolTip.Tip="Refresh list of devices">
                     <Image Name="imgRefresh" Source="/Assets/Toolbar/Refresh_16.png" />
                 </Button>
             </StackPanel>
@@ -103,7 +104,7 @@
         </Grid>
 
         <!-- Main -->
-        <Grid ColumnDefinitions="Auto, Auto, *, Auto" Background="{DynamicResource SystemChromeMediumColor}">
-        </Grid>
+        <TabControl Name="tabMain">
+        </TabControl>
     </DockPanel>
 </Window>
