@@ -30,18 +30,45 @@ internal class FT232RContent {
     }
 
     private void PopulateUsb(Grid grid) {
-        FTContent.NewTextRow(grid,  "Vendor ID",                   Device.VendorId.ToString("X4"));
-        FTContent.NewTextRow(grid,  "Product ID",                  Device.ProductId.ToString("X4"));
+        FTContent.NewTextRow(grid,  "Vendor ID",                   Device.VendorId.ToString("X4"),
+            isEnabled: false
+        );
+        FTContent.NewTextRow(grid,  "Product ID",                  Device.ProductId.ToString("X4"),
+            isEnabled: false
+        );
+
         FTContent.NewSeparatorRow(grid);
-        FTContent.NewTextRow(grid,  "Manufacturer",                Device.Manufacturer);
-        FTContent.NewTextRow(grid,  "Product description",         Device.ProductDescription);
+
+        FTContent.NewTextRow(grid,  "Manufacturer",                Device.Manufacturer,
+            apply: (value) => { Device.Manufacturer = value; }
+        );
+        FTContent.NewTextRow(grid,  "Product description",         Device.ProductDescription,
+            apply: (value) => { Device.ProductDescription = value; }
+        );
+
         FTContent.NewSeparatorRow(grid);
-        FTContent.NewTextRow(grid,  "Serial number",               Device.SerialNumber);
-        FTContent.NewTextRow(grid,  "Serial number prefix",        "", isEnabled: false);
-        FTContent.NewCheckRow(grid, "Auto-generate serial number", false);
+
+        FTContent.NewTextRow(grid,  "Serial number",               Device.SerialNumber,
+            apply: (value) => { Device.SerialNumber = value; },
+            button: () => {
+                var prefix = "FT";
+                var digitCount = 6;
+                return FtdiCommonDevice.GetRandomSerialNumber(prefix, digitCount);
+            }
+        ); // TODO: ask for prefix and length
+
+        FTContent.NewCheckRow(grid,  "Serial number enabled",       Device.SerialNumberEnabled,
+            apply: (value) => { Device.SerialNumberEnabled = value; }
+        );
+
         FTContent.NewSeparatorRow(grid);
-        FTContent.NewCheckRow(grid, "Remote wakeup",               Device.RemoteWakeupEnabled);
-        FTContent.NewCheckRow(grid, "Bus powered",                 Device.BusPowered);
+
+        FTContent.NewCheckRow(grid, "Remote wakeup",               Device.RemoteWakeupEnabled,
+            apply: (value) => { Device.RemoteWakeupEnabled = value; }
+        );
+        FTContent.NewCheckRow(grid, "Bus powered",                 Device.BusPowered,
+            apply: (value) => { Device.BusPowered = value; }
+        );
     }
 
     private void PopulateIO(Grid grid) {
@@ -53,18 +80,42 @@ internal class FT232RContent {
     }
 
     private void PopulateHardware(Grid grid) {
-        FTContent.NewCheckRow(grid, "High-current I/O",            Device.HighCurrentIO);
-        FTContent.NewCheckRow(grid, "Use D2XX driver",             Device.D2xxDirectDriver);
-        FTContent.NewCheckRow(grid, "External oscillator",         Device.ExternalOscillator,  isEnabled: false);
+        FTContent.NewCheckRow(grid, "High-current I/O",            Device.HighCurrentIO,
+            apply: (value) => { Device.HighCurrentIO = value; }
+        );
+        FTContent.NewCheckRow(grid, "Use D2XX driver",             Device.D2xxDirectDriver,
+            apply: (value) => { Device.D2xxDirectDriver = value; }
+        );
+        FTContent.NewCheckRow(grid, "External oscillator",         Device.ExternalOscillator,
+            isEnabled: false
+        );
+
         FTContent.NewSeparatorRow(grid);
-        FTContent.NewCheckRow(grid, "Invert TXD",                  Device.TxdInverted);
-        FTContent.NewCheckRow(grid, "Invert RXD",                  Device.RxdInverted);
-        FTContent.NewCheckRow(grid, "Invert RTS",                  Device.RtsInverted);
-        FTContent.NewCheckRow(grid, "Invert CTS",                  Device.CtsInverted);
-        FTContent.NewCheckRow(grid, "Invert DTR",                  Device.DtrInverted);
-        FTContent.NewCheckRow(grid, "Invert DSR",                  Device.DsrInverted);
-        FTContent.NewCheckRow(grid, "Invert DCD",                  Device.DcdInverted);
-        FTContent.NewCheckRow(grid, "Invert RI",                   Device.RiInverted);
+
+        FTContent.NewCheckRow(grid, "Invert TXD",                  Device.TxdInverted,
+            apply: (value) => { Device.TxdInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert RXD",                  Device.RxdInverted,
+            apply: (value) => { Device.RxdInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert RTS",                  Device.RtsInverted,
+            apply: (value) => { Device.RtsInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert CTS",                  Device.CtsInverted,
+            apply: (value) => { Device.CtsInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert DTR",                  Device.DtrInverted,
+            apply: (value) => { Device.DtrInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert DSR",                  Device.DsrInverted,
+            apply: (value) => { Device.DsrInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert DCD",                  Device.DcdInverted,
+            apply: (value) => { Device.DcdInverted = value; }
+        );
+        FTContent.NewCheckRow(grid, "Invert RI",                   Device.RiInverted,
+            apply: (value) => { Device.RiInverted = value; }
+        );
     }
 
 }

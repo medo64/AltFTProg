@@ -275,8 +275,7 @@ public static class AboutBox {
 
     private static ISolidColorBrush GetWindowBorderBrush() {
         if (Application.Current?.Styles[0] is IResourceProvider provider) {
-            object? resourceObject;
-            if (provider.TryGetResource("TextControlBorderBrush", Application.Current?.ActualThemeVariant!, out resourceObject)
+            if (provider.TryGetResource("TextControlBorderBrush", Application.Current?.ActualThemeVariant!, out var resourceObject)
              || provider.TryGetResource("ThemeBorderLowBrush", Application.Current?.ActualThemeVariant!, out resourceObject)) {
                 if (resourceObject is SolidColorBrush brush) {
                     return brush;

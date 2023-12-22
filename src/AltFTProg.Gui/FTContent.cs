@@ -1,4 +1,6 @@
 namespace AltFTProgGui;
+
+using System;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -32,7 +34,7 @@ internal static class FTContent {
         grid.Children.Add(separator);
     }
 
-    public static void NewTextRow(Grid grid, string caption, string value, bool isEnabled = true) {
+    public static TextBox NewTextRow(Grid grid, string caption, string value, bool isEnabled = true, Func<string, bool>? validate = null, Action<string>? apply = null, Func<string>? button = null) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -46,19 +48,53 @@ internal static class FTContent {
         label.SetValue(Grid.RowProperty, row);
         grid.Children.Add(label);
 
-        var text = new TextBox {
+        var dock = new DockPanel() { };
+
+        var box = new TextBox {
             Text = value,
             IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
-        text.SetValue(Grid.ColumnProperty, 1);
-        text.SetValue(Grid.RowProperty, row);
-        grid.Children.Add(text);
+        box.TextChanged += delegate {
+            var value = box.Text;
+            var isOk = validate?.Invoke(value) ?? true;
+            if (isOk) {
+                try {
+                    apply?.Invoke(value);
+                    box.Foreground = GetForegroundBrush();
+                } catch (ArgumentException ex) {
+                    box.Foreground = GetForegroundBrush(isError: true);
+                    ToolTip.SetTip(box, ex.Message);
+                }
+            }
+        };
+
+        if (button != null) {
+            var buttonBox = new Button() {
+                Content = "Regenerate",
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(3, 0),
+            };
+            buttonBox.Click += delegate {
+                var value = button.Invoke();
+                box.Text = value;
+            };
+            buttonBox.SetValue(DockPanel.DockProperty, Dock.Right);
+            dock.Children.Add(buttonBox);
+        }
+        dock.Children.Add(box);  // to fill dock panel
+
+        dock.SetValue(Grid.ColumnProperty, 1);
+        dock.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(dock);
+
+        return box;
     }
 
-    public static void NewCheckRow(Grid grid, string caption, bool value, bool isEnabled = true) {
+    public static CheckBox NewCheckRow(Grid grid, string caption, bool value, bool isEnabled = true, Func<bool, bool>? validate = null, Action<bool>? apply = null) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -72,19 +108,24 @@ internal static class FTContent {
         label.SetValue(Grid.RowProperty, row);
         grid.Children.Add(label);
 
-        var check = new CheckBox {
+        var box = new CheckBox {
             IsChecked = value,
             IsEnabled = isEnabled,
-        HorizontalAlignment = HorizontalAlignment.Left,
+            HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
-        check.SetValue(Grid.ColumnProperty, 1);
-        check.SetValue(Grid.RowProperty, row);
-        grid.Children.Add(check);
+        box.IsCheckedChanged += delegate {
+            apply?.Invoke(value);
+        };
+        box.SetValue(Grid.ColumnProperty, 1);
+        box.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(box);
+
+        return box;
     }
 
-    public static void NewComboRow(Grid grid, string caption, string value) {
+    public static ComboBox NewComboRow(Grid grid, string caption, string value, bool isEnabled = true, Func<ComboBoxItem, bool>? validate = null, Action<ComboBoxItem>? apply = null) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -98,14 +139,34 @@ internal static class FTContent {
         label.SetValue(Grid.RowProperty, row);
         grid.Children.Add(label);
 
-        var combo = new ComboBox {
+        var box = new ComboBox {
+            IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
-        combo.SetValue(Grid.ColumnProperty, 1);
-        combo.SetValue(Grid.RowProperty, row);
-        grid.Children.Add(combo);
+        box.SelectionChanged += delegate {
+            //TODO
+        };
+        box.SetValue(Grid.ColumnProperty, 1);
+        box.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(box);
+
+        return box;
+    }
+
+
+    private static ISolidColorBrush GetForegroundBrush(bool isError = false) {
+        if (isError) { return Brushes.Red; }
+
+        if (Application.Current?.Styles[0] is IResourceProvider provider) {
+            if (provider.TryGetResource("TextControlForeground", Application.Current?.ActualThemeVariant!, out var resourceObject)) {
+                if (resourceObject is SolidColorBrush brush) {
+                    return brush;
+                }
+            }
+        }
+        return Brushes.Black;
     }
 
 }

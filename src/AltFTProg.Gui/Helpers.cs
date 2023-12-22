@@ -42,8 +42,8 @@ internal static class Helpers {
         }
 
         foreach (var item in imagesAndIconsNames) {
-            var image = item.Item1;
-            var iconName = item.Item2;
+            var image = item.image;
+            var iconName = item.iconName;
             var url = "avares://ftprog2gui/Assets/Toolbar/"
                     + iconName
                     + "_"
