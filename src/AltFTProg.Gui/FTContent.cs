@@ -3,6 +3,7 @@ using System;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -179,7 +180,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static ComboBox NewEnumRow(Grid grid, string caption, string value, bool isEnabled = true, Func<ComboBoxItem, bool>? validate = null, Action<ComboBoxItem>? apply = null) {
+    public static ComboBox NewEnumRow<T>(Grid grid, string caption, T value, bool isEnabled = true, Action<T>? apply = null) where T : struct, Enum {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -199,8 +200,20 @@ internal static class FTContent {
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
+        FillCombo<T>(box, value);
         box.SelectionChanged += delegate {
-            //TODO
+            if (box.SelectedItem is T value) {
+                try {
+                    apply?.Invoke(value);
+                    box.Foreground = GetForegroundBrush();
+                } catch (ArgumentException ex) {
+                    box.Foreground = GetForegroundBrush(isError: true);
+                    ToolTip.SetTip(box, ex.Message);
+                }
+            } else {
+                box.Foreground = GetForegroundBrush(isError: true);
+                ToolTip.SetTip(box, "");
+            }
         };
         box.SetValue(Grid.ColumnProperty, 1);
         box.SetValue(Grid.RowProperty, row);
@@ -209,6 +222,13 @@ internal static class FTContent {
         return box;
     }
 
+    private static void FillCombo<T>(ComboBox box, T selectedItem) where T : struct, Enum {
+        var values = Enum.GetValues<T>();
+        foreach (var value in values) {
+            box.Items.Add(value);
+        }
+        box.SelectedItem = selectedItem;
+    }
 
     private static ISolidColorBrush GetForegroundBrush(bool isError = false) {
         if (isError) { return Brushes.Red; }

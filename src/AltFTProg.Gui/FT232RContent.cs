@@ -56,11 +56,21 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // IO
             var tab = FTContent.NewTab("IO", out var grid);
 
-            FTContent.NewEnumRow(grid,"CBUS 0 Function",                "");
-            FTContent.NewEnumRow(grid,"CBUS 1 Function",                "");
-            FTContent.NewEnumRow(grid,"CBUS 2 Function",                "");
-            FTContent.NewEnumRow(grid,"CBUS 3 Function",                "");
-            FTContent.NewEnumRow(grid,"CBUS 4 Function",                "");
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(grid,"CBUS 0 Function", Device.CBus0Signal,
+                apply: (value) => { Device.CBus0Signal = value; }
+            );
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(grid,"CBUS 1 Function", Device.CBus1Signal,
+                apply: (value) => { Device.CBus1Signal = value; }
+            );
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(grid,"CBUS 2 Function", Device.CBus2Signal,
+                apply: (value) => { Device.CBus2Signal = value; }
+            );
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(grid,"CBUS 3 Function", Device.CBus3Signal,
+                apply: (value) => { Device.CBus3Signal = value; }
+            );
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid,"CBUS 4 Function", Device.CBus4Signal,
+                apply: (value) => { Device.CBus4Signal = value; }
+            );
 
             Tabs.Items.Add(tab);
         }
