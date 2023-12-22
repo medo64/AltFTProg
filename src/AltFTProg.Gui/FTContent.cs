@@ -202,9 +202,9 @@ internal static class FTContent {
         };
         FillCombo<T>(box, value);
         box.SelectionChanged += delegate {
-            if (box.SelectedItem is T value) {
+            if (box.SelectedItem is ComboEnumItem<T> selectedItem) {
                 try {
-                    apply?.Invoke(value);
+                    apply?.Invoke(selectedItem.Value);
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);
@@ -222,12 +222,15 @@ internal static class FTContent {
         return box;
     }
 
-    private static void FillCombo<T>(ComboBox box, T selectedItem) where T : struct, Enum {
+    private static void FillCombo<T>(ComboBox box, T selectedValue) where T : struct, Enum {
+        ComboEnumItem<T>? selectedItem = null;
         var values = Enum.GetValues<T>();
         foreach (var value in values) {
-            box.Items.Add(value);
+            var newItem = new ComboEnumItem<T>(value);
+            if (selectedValue.Equals(value)) { selectedItem = newItem; }
+            box.Items.Add(newItem);
         }
-        box.SelectedItem = selectedItem;
+        if (selectedItem != null) { box.SelectedItem = selectedItem; }
     }
 
     private static ISolidColorBrush GetForegroundBrush(bool isError = false) {
