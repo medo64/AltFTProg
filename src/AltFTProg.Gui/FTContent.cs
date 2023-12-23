@@ -277,6 +277,56 @@ internal static class FTContent {
         return box;
     }
 
+    public static ComboBox NewTupleRow<T>(Grid grid, string caption, T value, (T value, string title)[] items, bool isEnabled = true, Action<T>? apply = null) where T : struct {
+        var row = grid.RowDefinitions.Count;
+        grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
+
+        var label = new Label() {
+            Content = caption + ":",
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 7, 0),
+        };
+        label.SetValue(Grid.ColumnProperty, 0);
+        label.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(label);
+
+        var box = new ComboBox {
+            IsEnabled = isEnabled,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 3),
+        };
+
+        TupleItem<T>? selectedItem = null;
+        foreach (var item in items) {
+            var newItem = new TupleItem<T>(item.title, item.value);
+            if (value.Equals(item.value)) { selectedItem = newItem; }
+            box.Items.Add(newItem);
+        }
+        if (selectedItem != null) { box.SelectedItem = selectedItem; }
+
+        box.SelectionChanged += delegate {
+            if (box.SelectedItem is TupleItem<T> selectedItem) {
+                try {
+                    apply?.Invoke(selectedItem.Value);
+                    box.Foreground = GetForegroundBrush();
+                } catch (ArgumentException ex) {
+                    box.Foreground = GetForegroundBrush(isError: true);
+                    ToolTip.SetTip(box, ex.Message);
+                }
+            } else {
+                box.Foreground = GetForegroundBrush(isError: true);
+                ToolTip.SetTip(box, "");
+            }
+        };
+        box.SetValue(Grid.ColumnProperty, 1);
+        box.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(box);
+
+        return box;
+    }
+
     private static void FillCombo<T>(ComboBox box, T selectedValue) where T : struct, Enum {
         ComboEnumItem<T>? selectedItem = null;
         var values = Enum.GetValues<T>();

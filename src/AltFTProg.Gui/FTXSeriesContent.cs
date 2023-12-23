@@ -57,7 +57,7 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 apply: (value) => { Device.RemoteWakeupEnabled = value; }
             );
 
-            FTContent.NewBooleanRow(grid,"Pull-down I/O in suspend",        Device.PulldownPinsInSuspend,
+            FTContent.NewBooleanRow(grid,"Pull-down I/O in suspend",    Device.PulldownPinsInSuspend,
                 apply: (value) => { Device.RemoteWakeupEnabled = value; }
             );
 
@@ -90,7 +90,13 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 apply: (value) => { Device.CBusSchmittInput = value; }
             );
 
-            FTContent.NewIntegerRow(grid,"CBUS Drive",                  Device.CBusDriveCurrent, "mA",
+            FTContent.NewTupleRow<int>(grid,"CBUS Drive",               Device.CBusDriveCurrent,
+                new (int, string)[] {
+                    ( 4,  "4 mA"),
+                    ( 8,  "8 mA"),
+                    (12, "12 mA"),
+                    (16, "16 mA")
+                },
                 apply: (value) => { Device.CBusDriveCurrent = value; }
             );
 
@@ -104,7 +110,13 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 apply: (value) => { Device.DBusSchmittInput = value; }
             );
 
-            FTContent.NewIntegerRow(grid,"DBUS Drive",                  Device.DBusDriveCurrent, "mA",
+            FTContent.NewTupleRow<int>(grid,"DBUS Drive",               Device.DBusDriveCurrent,
+                new (int, string)[] {
+                    ( 4,  "4 mA"),
+                    ( 8,  "8 mA"),
+                    (12, "12 mA"),
+                    (16, "16 mA")
+                },
                 apply: (value) => { Device.DBusDriveCurrent = value; }
             );
 
