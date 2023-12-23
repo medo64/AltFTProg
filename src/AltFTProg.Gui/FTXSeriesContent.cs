@@ -2,7 +2,7 @@ namespace AltFTProgGui;
 using Avalonia.Controls;
 using AltFTProg;
 
-internal class FT232RContent(Ftdi232RDevice Device) {
+internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
 
     public void Populate(TabControl Tabs) {
         {  // USB
@@ -67,20 +67,45 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // IO
             var tab = FTContent.NewTab("I/O", out var grid);
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(grid,"CBUS 0 Function", Device.CBus0Signal,
+            FTContent.NewEnumRow<FtdiXSeriesDevice.CBusPinSignal>(grid,"CBUS 0 Function", Device.CBus0Signal,
                 apply: (value) => { Device.CBus0Signal = value; }
             );
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(grid,"CBUS 1 Function", Device.CBus1Signal,
+            FTContent.NewEnumRow<FtdiXSeriesDevice.CBusPinSignal>(grid,"CBUS 1 Function", Device.CBus1Signal,
                 apply: (value) => { Device.CBus1Signal = value; }
             );
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(grid,"CBUS 2 Function", Device.CBus2Signal,
+            FTContent.NewEnumRow<FtdiXSeriesDevice.CBusPinSignal>(grid,"CBUS 2 Function", Device.CBus2Signal,
                 apply: (value) => { Device.CBus2Signal = value; }
             );
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(grid,"CBUS 3 Function", Device.CBus3Signal,
+            FTContent.NewEnumRow<FtdiXSeriesDevice.CBusPinSignal>(grid,"CBUS 3 Function", Device.CBus3Signal,
                 apply: (value) => { Device.CBus3Signal = value; }
             );
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid,"CBUS 4 Function", Device.CBus4Signal,
-                apply: (value) => { Device.CBus4Signal = value; }
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid,"CBUS Slow-slew",              Device.CBusSlowSlew,
+                apply: (value) => { Device.CBusSlowSlew = value; }
+            );
+
+            FTContent.NewBooleanRow(grid,"CBUS Schmitt",                Device.CBusSchmittInput,
+                apply: (value) => { Device.CBusSchmittInput = value; }
+            );
+
+            FTContent.NewIntegerRow(grid,"CBUS Drive",                  Device.CBusDriveCurrent, "mA",
+                apply: (value) => { Device.CBusDriveCurrent = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid,"DBUS Slow-slew",              Device.DBusSlowSlew,
+                apply: (value) => { Device.CBusSlowSlew = value; }
+            );
+
+            FTContent.NewBooleanRow(grid,"DBUS Schmitt",                Device.DBusSchmittInput,
+                apply: (value) => { Device.DBusSchmittInput = value; }
+            );
+
+            FTContent.NewIntegerRow(grid,"DBUS Drive",                  Device.DBusDriveCurrent, "mA",
+                apply: (value) => { Device.DBusDriveCurrent = value; }
             );
 
             Tabs.Items.Add(tab);
@@ -89,14 +114,31 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // Hardware
             var tab = FTContent.NewTab("Hardware", out var grid);
 
-            FTContent.NewBooleanRow(grid, "High-current I/O",           Device.HighCurrentIO,
-                apply: (value) => { Device.HighCurrentIO = value; }
-            );
             FTContent.NewBooleanRow(grid, "Use D2XX driver",            Device.D2xxDirectDriver,
                 apply: (value) => { Device.D2xxDirectDriver = value; }
             );
-            FTContent.NewBooleanRow(grid, "External oscillator",        Device.ExternalOscillator,
-                isEnabled: false
+            FTContent.NewBooleanRow(grid, "Virtual COM port driver",    Device.VirtualComPortDriver,
+                apply: (value) => { Device.VirtualComPortDriver = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "RS-485 echo supression",     Device.Rs485EchoSuppression,
+                apply: (value) => { Device.Rs485EchoSuppression = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "Battery charge enable",      Device.BatteryChargeEnable,
+                apply: (value) => { Device.BatteryChargeEnable = value; }
+            );
+
+            FTContent.NewBooleanRow(grid, "Force power enable",         Device.ForcePowerEnable,
+                apply: (value) => { Device.ForcePowerEnable = value; }
+            );
+
+            FTContent.NewBooleanRow(grid, "Deactivate sleep",           Device.DeactivateSleep,
+                apply: (value) => { Device.DeactivateSleep = value; }
             );
 
             FTContent.NewSeparatorRow(grid);

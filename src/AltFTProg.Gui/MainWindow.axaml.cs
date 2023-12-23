@@ -143,6 +143,8 @@ public partial class MainWindow : Window {
         if (device != null) {
             if (device is Ftdi232RDevice ft232rDevice) {
                 new FT232RContent(ft232rDevice).Populate(tabs);
+            } else if (device is FtdiXSeriesDevice xSeriesDevice) {
+                new FTXSeriesContent(xSeriesDevice).Populate(tabs);
             } else {
                 var stack = new StackPanel() {
                     VerticalAlignment = VerticalAlignment.Center,

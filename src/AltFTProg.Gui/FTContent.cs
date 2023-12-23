@@ -149,6 +149,61 @@ internal static class FTContent {
         return box;
     }
 
+    public static TextBox NewIntegerRow(Grid grid, string caption, int value, string? unit = null, bool isEnabled = true, Func<int, bool>? validate = null, Action<int>? apply = null) {
+        var row = grid.RowDefinitions.Count;
+        grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
+
+        var label = new Label() {
+            Content = caption + ":",
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 0, 7, 0),
+        };
+        label.SetValue(Grid.ColumnProperty, 0);
+        label.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(label);
+
+        var dock = new DockPanel() { };
+        if (unit != null) {
+            var unitLabel = new Label() {
+                Content = unit,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            unitLabel.SetValue(DockPanel.DockProperty, Dock.Right);
+            dock.Children.Add(unitLabel);
+        }
+
+        var box = new TextBox {
+            Text = value.ToString(CultureInfo.InvariantCulture),
+            IsEnabled = isEnabled,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Center,
+            Margin = new Thickness(0, 3),
+        };
+        box.TextChanged += delegate {
+            var isOk = int.TryParse(box.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && (validate?.Invoke(value) ?? true);
+            if (isOk) {
+                try {
+                    apply?.Invoke(value);
+                    box.Foreground = GetForegroundBrush();
+                } catch (ArgumentException ex) {
+                    box.Foreground = GetForegroundBrush(isError: true);
+                    ToolTip.SetTip(box, ex.Message);
+                }
+            } else {
+                box.Foreground = GetForegroundBrush(isError: true);
+                ToolTip.SetTip(box, "Validation error (must be a number)");
+            }
+        };
+        dock.Children.Add(box);  // to fill dock panel
+
+        dock.SetValue(Grid.ColumnProperty, 1);
+        dock.SetValue(Grid.RowProperty, row);
+        grid.Children.Add(dock);
+
+        return box;
+    }
+
     public static CheckBox NewBooleanRow(Grid grid, string caption, bool value, bool isEnabled = true, Func<bool, bool>? validate = null, Action<bool>? apply = null) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
