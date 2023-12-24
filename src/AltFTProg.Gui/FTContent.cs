@@ -3,7 +3,6 @@ using System;
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 
@@ -35,7 +34,7 @@ internal static class FTContent {
         grid.Children.Add(separator);
     }
 
-    public static TextBox NewStringRow(Grid grid, string caption, string value, bool isEnabled = true, Func<string, bool>? validate = null, Action<string>? apply = null, Func<string>? button = null) {
+    public static TextBox NewStringRow(Grid grid, string caption, Func<string> value, Func<string, bool>? validate = null, Action<string>? apply = null, Func<string>? button = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -52,7 +51,7 @@ internal static class FTContent {
         var dock = new DockPanel() { };
 
         var box = new TextBox {
-            Text = value,
+            Text = value.Invoke(),
             IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Center,
@@ -98,7 +97,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static TextBox NewHexRow(Grid grid, string caption, string value, bool isEnabled = true, Func<int, bool>? validate = null, Action<int>? apply = null) {
+    public static TextBox NewHexRow(Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -119,7 +118,7 @@ internal static class FTContent {
         });
 
         var box = new TextBox {
-            Text = value,
+            Text = value.Invoke().ToString("X4", CultureInfo.InvariantCulture),
             IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Center,
@@ -149,7 +148,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static TextBox NewIntegerRow(Grid grid, string caption, int value, string? unit = null, bool isEnabled = true, Func<int, bool>? validate = null, Action<int>? apply = null) {
+    public static TextBox NewIntegerRow(Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, string? unit = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -174,7 +173,7 @@ internal static class FTContent {
         }
 
         var box = new TextBox {
-            Text = value.ToString(CultureInfo.InvariantCulture),
+            Text = value.Invoke().ToString(CultureInfo.InvariantCulture),
             IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             VerticalAlignment = VerticalAlignment.Center,
@@ -204,7 +203,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static CheckBox NewBooleanRow(Grid grid, string caption, bool value, bool isEnabled = true, Func<bool, bool>? validate = null, Action<bool>? apply = null) {
+    public static CheckBox NewBooleanRow(Grid grid, string caption, Func<bool> value, Func<bool, bool>? validate = null, Action<bool>? apply = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -219,14 +218,14 @@ internal static class FTContent {
         grid.Children.Add(label);
 
         var box = new CheckBox {
-            IsChecked = value,
+            IsChecked = value.Invoke(),
             IsEnabled = isEnabled,
             HorizontalAlignment = HorizontalAlignment.Left,
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
         box.IsCheckedChanged += delegate {
-            apply?.Invoke(value);
+            apply?.Invoke(box.IsChecked ?? false);
         };
         box.SetValue(Grid.ColumnProperty, 1);
         box.SetValue(Grid.RowProperty, row);
@@ -235,7 +234,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static ComboBox NewEnumRow<T>(Grid grid, string caption, T value, bool isEnabled = true, Action<T>? apply = null) where T : struct, Enum {
+    public static ComboBox NewEnumRow<T>(Grid grid, string caption, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct, Enum {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -255,7 +254,17 @@ internal static class FTContent {
             VerticalAlignment = VerticalAlignment.Center,
             Margin = new Thickness(0, 3),
         };
-        FillCombo<T>(box, value);
+
+        var selectedValue = value.Invoke();
+        ComboEnumItem<T>? selectedItem = null;
+        var enumValues = Enum.GetValues<T>();
+        foreach (var enumValue in enumValues) {
+            var newItem = new ComboEnumItem<T>(enumValue);
+            if (enumValue.Equals(selectedValue)) { selectedItem = newItem; }
+            box.Items.Add(newItem);
+        }
+        if (selectedItem != null) { box.SelectedItem = selectedItem; }
+
         box.SelectionChanged += delegate {
             if (box.SelectedItem is ComboEnumItem<T> selectedItem) {
                 try {
@@ -277,7 +286,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static ComboBox NewTupleRow<T>(Grid grid, string caption, T value, (T value, string title)[] items, bool isEnabled = true, Action<T>? apply = null) where T : struct {
+    public static ComboBox NewTupleRow<T>(Grid grid, string caption, (T value, string title)[] items, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -298,10 +307,11 @@ internal static class FTContent {
             Margin = new Thickness(0, 3),
         };
 
+        var selectedValue = value.Invoke();
         TupleItem<T>? selectedItem = null;
         foreach (var item in items) {
             var newItem = new TupleItem<T>(item.title, item.value);
-            if (value.Equals(item.value)) { selectedItem = newItem; }
+            if (item.value.Equals(selectedValue)) { selectedItem = newItem; }
             box.Items.Add(newItem);
         }
         if (selectedItem != null) { box.SelectedItem = selectedItem; }
@@ -325,17 +335,6 @@ internal static class FTContent {
         grid.Children.Add(box);
 
         return box;
-    }
-
-    private static void FillCombo<T>(ComboBox box, T selectedValue) where T : struct, Enum {
-        ComboEnumItem<T>? selectedItem = null;
-        var values = Enum.GetValues<T>();
-        foreach (var value in values) {
-            var newItem = new ComboEnumItem<T>(value);
-            if (selectedValue.Equals(value)) { selectedItem = newItem; }
-            box.Items.Add(newItem);
-        }
-        if (selectedItem != null) { box.SelectedItem = selectedItem; }
     }
 
     private static ISolidColorBrush GetForegroundBrush(bool isError = false) {
