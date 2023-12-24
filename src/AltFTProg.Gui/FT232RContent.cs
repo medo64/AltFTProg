@@ -82,27 +82,27 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // IO
             var tab = FTContent.NewTab("I/O", out var grid);
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(grid,"CBUS 0 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(grid, "CBUS 0 Function",
                 value: () => { return Device.CBus0Signal; },
                 apply: (value) => { Device.CBus0Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(grid,"CBUS 1 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(grid, "CBUS 1 Function",
                 value: () => { return Device.CBus1Signal; },
                 apply: (value) => { Device.CBus1Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(grid,"CBUS 2 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(grid, "CBUS 2 Function",
                 value: () => { return Device.CBus2Signal; },
                 apply: (value) => { Device.CBus2Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(grid,"CBUS 3 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(grid, "CBUS 3 Function",
                 value: () => { return Device.CBus3Signal; },
                 apply: (value) => { Device.CBus3Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid,"CBUS 4 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid, "CBUS 4 Function",
                 value: () => { return Device.CBus4Signal; },
                 apply: (value) => { Device.CBus4Signal = value; }
             );
@@ -110,25 +110,8 @@ internal class FT232RContent(Ftdi232RDevice Device) {
             Tabs.Items.Add(tab);
         }
 
-        {  // Hardware
-            var tab = FTContent.NewTab("Hardware", out var grid);
-
-            FTContent.NewBooleanRow(grid, "High-current I/O",
-                value: () => { return Device.HighCurrentIO; },
-                apply: (value) => { Device.HighCurrentIO = value; }
-            );
-
-            FTContent.NewBooleanRow(grid, "Use D2XX driver",
-                value: () => { return Device.D2xxDirectDriver;  },
-                apply: (value) => { Device.D2xxDirectDriver = value; }
-            );
-
-            FTContent.NewBooleanRow(grid, "External oscillator",
-                value: () => { return Device.ExternalOscillator; },
-                isEnabled: false
-            );
-
-            FTContent.NewSeparatorRow(grid);
+        {  // Invert
+            var tab = FTContent.NewTab("Invert", out var grid);
 
             FTContent.NewBooleanRow(grid, "Invert TXD",
                 value: () => { return Device.TxdInverted; },
@@ -172,6 +155,31 @@ internal class FT232RContent(Ftdi232RDevice Device) {
 
             Tabs.Items.Add(tab);
         }
+
+        {  // Hardware
+            var tab = FTContent.NewTab("Hardware", out var grid);
+
+
+            FTContent.NewBooleanRow(grid, "D2XX direct driver",
+                value: () => { return Device.D2xxDirectDriver; },
+                apply: (value) => { Device.D2xxDirectDriver = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "High-current I/O",
+                value: () => { return Device.HighCurrentIO; },
+                apply: (value) => { Device.HighCurrentIO = value; }
+            );
+
+            FTContent.NewBooleanRow(grid, "External oscillator",
+                value: () => { return Device.ExternalOscillator; },
+                isEnabled: false
+            );
+
+            Tabs.Items.Add(tab);
+        }
+
     }
 
 }

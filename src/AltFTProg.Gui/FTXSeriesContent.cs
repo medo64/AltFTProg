@@ -126,69 +126,11 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 apply: (value) => { Device.CBusDriveCurrent = value; }
             );
 
-            FTContent.NewSeparatorRow(grid);
-
-            FTContent.NewBooleanRow(grid,"DBUS Slow-slew",
-                value: () => { return Device.DBusSlowSlew; },
-                apply: (value) => { Device.CBusSlowSlew = value; }
-            );
-
-            FTContent.NewBooleanRow(grid,"DBUS Schmitt",
-                value: () => { return Device.DBusSchmittInput; },
-                apply: (value) => { Device.DBusSchmittInput = value; }
-            );
-
-            FTContent.NewTupleRow<int>(grid,"DBUS Drive",
-                new (int, string)[] {
-                    ( 4,  "4 mA"),
-                    ( 8,  "8 mA"),
-                    (12, "12 mA"),
-                    (16, "16 mA")
-                },
-                value: () => { return Device.DBusDriveCurrent; },
-                apply: (value) => { Device.DBusDriveCurrent = value; }
-            );
-
             Tabs.Items.Add(tab);
         }
 
-        {  // Hardware
-            var tab = FTContent.NewTab("Hardware", out var grid);
-
-            FTContent.NewBooleanRow(grid, "Use D2XX driver",
-                value: () => { return Device.D2xxDirectDriver; },
-                apply: (value) => { Device.D2xxDirectDriver = value; }
-            );
-            FTContent.NewBooleanRow(grid, "Virtual COM port driver",
-                value: () => { return Device.VirtualComPortDriver; },
-                apply: (value) => { Device.VirtualComPortDriver = value; }
-            );
-
-            FTContent.NewSeparatorRow(grid);
-
-            FTContent.NewBooleanRow(grid, "RS-485 echo supression",
-                value: () => { return Device.Rs485EchoSuppression; },
-                apply: (value) => { Device.Rs485EchoSuppression = value; }
-            );
-
-            FTContent.NewSeparatorRow(grid);
-
-            FTContent.NewBooleanRow(grid, "Battery charge enable",
-                value: () => { return Device.BatteryChargeEnable; },
-                apply: (value) => { Device.BatteryChargeEnable = value; }
-            );
-
-            FTContent.NewBooleanRow(grid, "Force power enable",
-                value: () => { return Device.ForcePowerEnable; },
-                apply: (value) => { Device.ForcePowerEnable = value; }
-            );
-
-            FTContent.NewBooleanRow(grid, "Deactivate sleep",
-                value: () => { return Device.DeactivateSleep; },
-                apply: (value) => { Device.DeactivateSleep = value; }
-            );
-
-            FTContent.NewSeparatorRow(grid);
+        {  // Invert
+            var tab = FTContent.NewTab("Invert", out var grid);
 
             FTContent.NewBooleanRow(grid, "Invert TXD",
                 value: () => { return Device.TxdInverted; },
@@ -228,6 +170,68 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
             FTContent.NewBooleanRow(grid, "Invert RI",
                 value: () => { return Device.RiInverted; },
                 apply: (value) => { Device.RiInverted = value; }
+            );
+
+            Tabs.Items.Add(tab);
+        }
+
+        {  // Hardware
+            var tab = FTContent.NewTab("Hardware", out var grid);
+
+            FTContent.NewBooleanRow(grid, "D2XX direct driver",
+                value: () => { return Device.D2xxDirectDriver; },
+                apply: (value) => { Device.D2xxDirectDriver = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "RS-485 echo supression",
+                value: () => { return Device.Rs485EchoSuppression; },
+                apply: (value) => { Device.Rs485EchoSuppression = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid,"DBUS Slow-slew",
+                value: () => { return Device.DBusSlowSlew; },
+                apply: (value) => { Device.CBusSlowSlew = value; }
+            );
+
+            FTContent.NewBooleanRow(grid,"DBUS Schmitt",
+                value: () => { return Device.DBusSchmittInput; },
+                apply: (value) => { Device.DBusSchmittInput = value; }
+            );
+
+            FTContent.NewTupleRow<int>(grid,"DBUS Drive",
+                new (int, string)[] {
+                    ( 4,  "4 mA"),
+                    ( 8,  "8 mA"),
+                    (12, "12 mA"),
+                    (16, "16 mA")
+                },
+                value: () => { return Device.DBusDriveCurrent; },
+                apply: (value) => { Device.DBusDriveCurrent = value; }
+            );
+
+            Tabs.Items.Add(tab);
+        }
+
+        {  // Battery charge
+            var tab = FTContent.NewTab("Battery charge", out var grid);
+
+            FTContent.NewBooleanRow(grid, "Battery charge enable",
+                value: () => { return Device.BatteryChargeEnable; },
+                apply: (value) => { Device.BatteryChargeEnable = value; }
+            );
+
+            FTContent.NewBooleanRow(grid, "Force power enable",
+                value: () => { return Device.ForcePowerEnable; },
+                apply: (value) => { Device.ForcePowerEnable = value; }
+            );
+
+            FTContent.NewBooleanRow(grid, "Deactivate sleep",
+                value: () => { return Device.DeactivateSleep; },
+                apply: (value) => { Device.DeactivateSleep = value; }
             );
 
             Tabs.Items.Add(tab);
