@@ -7,8 +7,15 @@ if [[ $PID != "" ]]; then
     sudo kill $PID 2>/dev/null || true
 fi
 
+# Kill application (gui)
+PID=$(ps aux | grep '[/]opt/ftprog2/ftprog2gui' | awk '{print $2}')
+if [[ $PID != "" ]]; then
+    sudo kill $PID 2>/dev/null || true
+fi
+
 # Remove /usr/bin/ link
 rm /usr/bin/ftprog2 || true
+rm /usr/bin/ftprog2gui || true
 
 # Done
 exit 0

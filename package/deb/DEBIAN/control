@@ -7,4 +7,4 @@ Description:    Alternative FT_Prog
  Allows applying FT_Prog tempates to FT232R and FT230X devices.
 Section:        utils
 Priority:       optional
-Depends:        debconf, gnupg2, libc6
+Depends:        debconf, gnupg2, libc6, libftdi-dev

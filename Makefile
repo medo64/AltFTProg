@@ -23,9 +23,12 @@ all: release
 
 clean:
 	@dotnet clean ./src/AltFTProg/
+	@dotnet clean ./src/AltFTProg.Gui/
+	@rm -rf bin/* 2>/dev/null
 
 release:
 	@dotnet publish ./src/AltFTProg/ --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
+	@dotnet publish ./src/AltFTProg.Gui/ --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
 
 package: clean release
 	$(if $(findstring 0,$(HAS_DPKGDEB)),,$(error Package 'dpkg-deb' not installed))
@@ -52,11 +55,13 @@ package: clean release
 	@chmod 755 $(PACKAGE_DIR)/DEBIAN/config $(PACKAGE_DIR)/DEBIAN/p*inst $(PACKAGE_DIR)/DEBIAN/p*rm
 	@install -d $(PACKAGE_DIR)/opt/ftprog2/
 	@install bin/ftprog2 $(PACKAGE_DIR)/opt/ftprog2/
-	@install -m 644 bin/ftprog2.pdb $(PACKAGE_DIR)/opt/ftprog2/
+	@install bin/ftprog2gui $(PACKAGE_DIR)/opt/ftprog2/
+	@install -m 644 bin/libSkiaSharp.so $(PACKAGE_DIR)/opt/ftprog2/
+	@install -m 644 bin/libHarfBuzzSharp.so $(PACKAGE_DIR)/opt/ftprog2/
 	@fakeroot dpkg-deb -Z gzip --build $(PACKAGE_DIR)/ > /dev/null
 	@cp /tmp/$(PACKAGE_NAME).deb dist/
 	@$(RM) -r $(PACKAGE_DIR)/
-	-@lintian --suppress-tags dir-or-file-in-opt,no-changelog,unstripped-binary-or-object dist/$(PACKAGE_NAME).deb
+	-@lintian --suppress-tags dir-or-file-in-opt,no-changelog,unstripped-binary-or-object,embedded-library dist/$(PACKAGE_NAME).deb
 	@echo Output at dist/$(PACKAGE_NAME).deb
 
 preview: docs/man/ftprog2.1

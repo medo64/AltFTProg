@@ -7,6 +7,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <DebugType>embedded</DebugType>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -36,6 +37,7 @@
     <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.5" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.5" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
   </ItemGroup>
 
   <ItemGroup>
