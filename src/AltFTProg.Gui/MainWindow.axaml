@@ -79,9 +79,6 @@
                         <Label>Program</Label>
                     </StackPanel>
                 </Button>
-                <Button Name="mnuLoadTemplate" Click="OnMenuLoadTemplate" ToolTip.Tip="Load template XML">
-                    <Image Name="imgLoadTemplate" Source="/Assets/Toolbar/FileOpen_16.png" />
-                </Button>
             </StackPanel>
 
             <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="2">

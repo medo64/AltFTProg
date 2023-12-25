@@ -28,7 +28,6 @@ public partial class MainWindow : Window {
         Helpers.SetToolbarIcons(this, mnu,
                                (imgRefresh,      "Refresh"),
                                (imgProgram,      "DataProgram"),
-                               (imgLoadTemplate, "FileOpen"),
                                (imgApp,          "App"));
 
         OnMenuRefresh(this, new RoutedEventArgs());
@@ -47,7 +46,6 @@ public partial class MainWindow : Window {
         var deviceItem = mnuDevice.SelectedItem as DeviceItem;
         var isEnabled = (deviceItem != null);
         mnuProgram.IsEnabled = isEnabled;
-        mnuLoadTemplate.IsEnabled = isEnabled;
 
         if (tabMain == null) { return; }
         PopulateDevice(tabMain, deviceItem?.Device);
