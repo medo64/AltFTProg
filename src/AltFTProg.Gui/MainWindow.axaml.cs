@@ -66,9 +66,11 @@ public partial class MainWindow : Window {
             try {
                 var devices = FtdiDevice.GetDevices();
                 if (devices.Count == 0) {
-                    mnuDevice.Items.Clear();
-                    mnuDevice.Items.Add("No FTDI devices found");
-                    mnuDevice.SelectedIndex = 0;
+                    Dispatcher.UIThread.Post(() => {
+                        mnuDevice.Items.Clear();
+                        mnuDevice.Items.Add("No FTDI devices found");
+                        mnuDevice.SelectedIndex = 0;
+                    });
                 } else {
                     var deviceItems = new List<DeviceItem>();
                     foreach (var device in devices) {
