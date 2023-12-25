@@ -1,0 +1,110 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="450"
+        x:Class="AltFTProgGui.MainWindow"
+        Background="{DynamicResource SystemChromeMediumColor}"
+        MinWidth="600" MinHeight="400"
+        Width="700" Height="600"
+        Icon="Assets/App.ico"
+        Title="Alt FT_Prog">
+
+    <DockPanel>
+        <!-- Toolbar -->
+        <Grid Name="mnu" DockPanel.Dock="Top" ColumnDefinitions="Auto, Auto, *, Auto" Background="{DynamicResource SystemChromeMediumColor}">
+            <Grid.Styles>
+                <Style Selector="Button">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="CornerRadius" Value="0" />
+                    <Setter Property="Height" Value="16" />
+                    <Setter Property="Padding" Value="2" />
+                    <Style.Resources>
+                        <SolidColorBrush x:Key="ButtonBackgroundDisabled">Transparent</SolidColorBrush>
+                    </Style.Resources>
+                </Style>
+                <Style Selector="Button /template/ ContentPresenter">
+                    <Setter Property="Transitions">
+                        <Transitions>
+                            <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.07"></TransformOperationsTransition>
+                        </Transitions>
+                    </Setter>
+                </Style>
+                <Style Selector="Button:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="{DynamicResource SystemChromeMediumColor}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource SystemChromeHighColor}" />
+                    <Setter Property="BorderThickness" Value="1" />
+                </Style>
+                <Style Selector="Button:pressed /template/ ContentPresenter">
+                    <Setter Property="Padding" Value="3 3 1 1" />
+                    <Setter Property="Background" Value="Transparent" />
+                </Style>
+                <Style Selector="MenuItem">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumHighBrush}" />
+                </Style>
+                <Style Selector="MenuItem:pointerover /template/ ContentPresenter">
+                    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+                </Style>
+                <Style Selector="MenuItem.DropDown">
+                    <Setter Property="FontSize" Value="8" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Padding" Value="0" />
+                </Style>
+                <Style Selector="Label">
+                    <Setter Property="Height" Value="16" />
+                    <Setter Property="VerticalContentAlignment" Value="Center" />
+                    <Setter Property="Foreground" Value="{DynamicResource SystemControlForegroundBaseMediumHighBrush}" />
+                </Style>
+                <Style Selector="Label[IsEffectivelyEnabled=false]">
+                    <Setter Property="Opacity" Value="0.42" />
+                </Style>
+                <Style Selector="Image[IsEffectivelyEnabled=false]">
+                    <Setter Property="Opacity" Value="0.42" />
+                </Style>
+            </Grid.Styles>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="2">
+                <ComboBox Name="mnuDevice" Width="300" ToolTip.Tip="Selected FTDI device" IsEnabled="false" SelectedIndex="0" SelectionChanged="OnMenuDeviceChanged">
+                    <ComboBoxItem>Detecting FTDI devices...</ComboBoxItem>
+                </ComboBox>
+                <Button Name="mnuRefresh" Click="OnMenuRefresh" ToolTip.Tip="Refresh list of devices">
+                    <Image Name="imgRefresh" Source="/Assets/Toolbar/Refresh_16.png" />
+                </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8 0 0 0">
+                <Button Name="mnuProgram" Click="OnMenuProgram" ToolTip.Tip="Program EEPROM">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Name="imgProgram" Source="/Assets/Toolbar/DataProgram_16.png" />
+                        <Label>Program</Label>
+                    </StackPanel>
+                </Button>
+                <Button Name="mnuLoadTemplate" Click="OnMenuLoadTemplate" ToolTip.Tip="Load template XML">
+                    <Image Name="imgLoadTemplate" Source="/Assets/Toolbar/FileOpen_16.png" />
+                </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Margin="2">
+                <Button Click="OnMenuAppOptionsClick">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Name="imgApp" Source="/Assets/Toolbar/App_16.png" />
+                        <Menu>
+                            <MenuItem Header="▼" Classes="DropDown">
+                                <MenuItem Header="Options…" Click="OnMenuAppOptionsClick" IsVisible="false" />
+                                <MenuItem Header="-" IsVisible="false" />
+                                <MenuItem Header="Send Feedback…" Click="OnMenuAppFeedbackClick" IsVisible="false" />
+                                <MenuItem Header="Check for Upgrade…" Click="OnMenuAppUpgradeClick" IsVisible="false" />
+                                <MenuItem Header="-" IsVisible="false" />
+                                <MenuItem Header="About…" Click="OnMenuAppAboutClick" />
+                            </MenuItem>
+                        </Menu>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main -->
+        <TabControl Name="tabMain">
+        </TabControl>
+    </DockPanel>
+</Window>

@@ -5,9 +5,9 @@ SOURCE_FILE="/etc/apt/sources.list.d/medo64.list"
 if ! [ -f "$SOURCE_FILE" ] && [ "$DEBIAN_FRONTEND" != "noninteractive" ]; then
     . /usr/share/debconf/confmodule
 
-    db_input high ftprog2/add_repository
+    db_input high altftprog/add_repository
     db_go
-    db_get ftprog2/add_repository
+    db_get altftprog/add_repository
     case "$RET" in
         n*|N*|f*|F*) DO_ADD_REPO=0 ;;
     esac
@@ -17,7 +17,7 @@ DO_ADD_REPO=0
 SOURCE_FILE="/etc/apt/sources.list.d/medo64.list"
 if ! [ -f "$SOURCE_FILE" ] && [ "$DEBIAN_FRONTEND" != "noninteractive" ]; then
     . /usr/share/debconf/confmodule
-    db_get ftprog2/add_repository
+    db_get altftprog/add_repository
     case "$RET" in
         y*|Y*|T*|t*) DO_ADD_REPO=1 ;;
     esac

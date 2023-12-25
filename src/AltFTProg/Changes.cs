@@ -133,7 +133,7 @@ internal static class Changes {
 
                 case "USB_String_Descriptors/SerialNumber_AutoGenerate":
                     if (bool.Parse(value)) {
-                        var newGeneratedSerialNumber = Helpers.GetRandomSerial(serialNumberPrefix, 6);
+                        var newGeneratedSerialNumber = FtdiCommonDevice.GetRandomSerialNumber(serialNumberPrefix, 6);
                         device.SerialNumber = newGeneratedSerialNumber;
                         Output.WriteLine($"  Setting SerialNumber: {newGeneratedSerialNumber}");
                         hasModified = true;

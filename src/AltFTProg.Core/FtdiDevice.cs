@@ -281,7 +281,6 @@ public abstract class FtdiDevice {
 
             try {
                 for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
-                    Console.WriteLine(i);
                     var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
                     var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
                     ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
@@ -295,6 +294,28 @@ public abstract class FtdiDevice {
     }
 
     #endregion EEPROM
+
+
+    #region Overrrides
+
+    /// <summary>
+    /// Returns true if two devices have matching USB handle.
+    /// </summary>
+    /// <param name="obj">Other object.</param>
+    public override bool Equals(object? obj) {
+        if (obj is FtdiDevice other) {
+            return (UsbDeviceHandle == other.UsbDeviceHandle);
+        }
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode() {
+        return UsbDeviceHandle.GetHashCode();
+    }
+
+    #endregion Overrrides
+
 
     /// <summary>
     /// Returns collection of FTDI USB devices.

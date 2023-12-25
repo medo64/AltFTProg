@@ -8,17 +8,17 @@ Linux alternative to FT Prog utility.
 
 Run without arguments to list all devices:
 ```bash
-sudo ftprog2
+sudo altftprog
 ```
 
 To apply template (made by FT_Prog) just give file as an argument:
 ```bash
-sudo ftprog2 template.xml
+sudo altftprog template.xml
 ```
 
 To get more details, add `-v` parameter:
 ```bash
-sudo ftprog2 -v
+sudo altftprog -v
 ```
 
 

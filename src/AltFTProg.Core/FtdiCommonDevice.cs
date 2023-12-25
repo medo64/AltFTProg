@@ -1,5 +1,7 @@
 namespace AltFTProg;
 using System;
+using System.Security.Cryptography;
+using System.Text;
 
 /// <summary>
 /// Common FTDI device.
@@ -197,5 +199,28 @@ public abstract class FtdiCommonDevice : FtdiDevice {
             IsChecksumValid = true;  // fixup checksum
         }
     }
+
+
+    /// <summary>
+    /// Returns random serial number.
+    /// </summary>
+    /// <param name="prefix">Prefix text.</param>
+    /// <param name="digitCount">Number of random digits</param>
+    /// <exception cref="ArgumentNullException">Prefix is not null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Digit count must be larger than 0.</exception>
+    public static string GetRandomSerialNumber(string prefix, int digitCount) {
+        if (prefix == null) { throw new ArgumentNullException(nameof(prefix), "Prefix is not null."); }
+        if (digitCount < 1) { throw new ArgumentOutOfRangeException(nameof(digitCount), "Digit count must be larger than 0."); }
+
+        var rndBytes = RandomNumberGenerator.GetBytes(digitCount);
+        var sb = new StringBuilder(prefix);
+        for (var i = 0; i < digitCount; i++) {
+            var number = rndBytes[i] % 32;
+            var ch = (number < 26) ? (char)('A' + number) : (char)('2' + (number - 26));
+            sb.Append(ch);
+        }
+        return sb.ToString();
+    }
+
 
 }

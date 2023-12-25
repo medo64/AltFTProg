@@ -2,7 +2,7 @@
 set -e
 
 # Add /usr/bin/ link
-ln -s /opt/ftprog2/ftprog2 /usr/bin/ftprog2 2>/dev/null || true
+ln -s /opt/altftprog/altftprog /usr/bin/altftprog 2>/dev/null || true
 
 # Update man pages
 mandb -q
