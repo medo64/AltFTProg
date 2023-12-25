@@ -2,20 +2,19 @@
 set -e
 
 # Kill application
-PID=$(ps aux | grep '[/]opt/ftprog2/ftprog2' | awk '{print $2}')
+PID=$(ps aux | grep '[/]opt/altftprog/altftprog' | awk '{print $2}')
 if [[ $PID != "" ]]; then
     sudo kill $PID 2>/dev/null || true
 fi
 
 # Kill application (gui)
-PID=$(ps aux | grep '[/]opt/ftprog2/ftprog2gui' | awk '{print $2}')
+PID=$(ps aux | grep '[/]opt/altftprog/altftprogui' | awk '{print $2}')
 if [[ $PID != "" ]]; then
     sudo kill $PID 2>/dev/null || true
 fi
 
 # Remove /usr/bin/ link
-rm /usr/bin/ftprog2 || true
-rm /usr/bin/ftprog2gui || true
+rm /usr/bin/altftprog || true
 
 # Done
 exit 0

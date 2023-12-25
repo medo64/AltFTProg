@@ -44,7 +44,7 @@ internal static class Helpers {
         foreach (var item in imagesAndIconsNames) {
             var image = item.image;
             var iconName = item.iconName;
-            var url = "avares://ftprog2gui/Assets/Toolbar/"
+            var url = "avares://altftprogui/Assets/Toolbar/"
                     + iconName
                     + "_"
                     + iconSize.ToString(CultureInfo.InvariantCulture)

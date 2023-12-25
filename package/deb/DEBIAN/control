@@ -1,8 +1,8 @@
-Package:        ftprog2
+Package:        altftprog
 Version:        MAJOR.MINOR.PATCH
 Architecture:   ARCHITECTURE
 Maintainer:     Josip Medved <jmedved@jmedved.com>
-Homepage:       https://www.medo64.com/ftprog2/
+Homepage:       https://www.medo64.com/altftprog/
 Description:    Alternative FT_Prog
  Allows applying FT_Prog tempates to FT232R and FT230X devices.
 Section:        utils

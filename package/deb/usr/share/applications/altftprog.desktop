@@ -2,8 +2,8 @@
 Name=Alt FT_Prog
 GenericName=FT_Prog
 Comment=Linux alternative to FT_Prog utility.
-TryExec=/opt/ftprog2/ftprog2gui
-Exec=/opt/ftprog2/ftprog2gui
+TryExec=/opt/altftprog/altftprogui
+Exec=/opt/altftprog/altftprogui
 Icon=altftprog
 Type=Application
 Categories=GTK;GNOME;Utility;

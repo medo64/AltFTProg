@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>ftprog2gui</AssemblyName>
+    <AssemblyName>altftprogui</AssemblyName>
     <RootNamespace>AltFTProgGui</RootNamespace>
   </PropertyGroup>
 

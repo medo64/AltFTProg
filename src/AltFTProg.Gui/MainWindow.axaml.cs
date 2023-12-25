@@ -131,7 +131,7 @@ public partial class MainWindow : Window {
     }
 
     public void OnMenuAppAboutClick(object sender, RoutedEventArgs e) {
-        Medo.Avalonia.AboutBox.ShowDialog(this, new Uri("https://medo64.com/ftprog2/"));
+        Medo.Avalonia.AboutBox.ShowDialog(this, new Uri("https://medo64.com/altftprog/"));
     }
 
     #endregion Menu
