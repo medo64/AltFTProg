@@ -1,7 +1,7 @@
-Alternate FT Prog
+Alternate FT_Prog
 =================
 
-Linux alternative to FT Prog utility.
+Linux alternative to FT_Prog utility.
 
 
 ## Usage
