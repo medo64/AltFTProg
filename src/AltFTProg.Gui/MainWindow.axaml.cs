@@ -57,6 +57,7 @@ public partial class MainWindow : Window {
         mnu.IsEnabled = false;
         Cursor = new Cursor(StandardCursorType.Wait);
 
+        var selectedItem = mnuDevice.SelectedItem as DeviceItem;
         mnuDevice.Items.Clear();
         mnuDevice.Items.Add("Detecting FTDI devices...");
         mnuDevice.SelectedIndex = 0;
@@ -73,8 +74,13 @@ public partial class MainWindow : Window {
                     });
                 } else {
                     var deviceItems = new List<DeviceItem>();
+                    DeviceItem? newSelectedItem = null;
                     foreach (var device in devices) {
-                        deviceItems.Add(new DeviceItem(device));
+                        var deviceItem = new DeviceItem(device);
+                        deviceItems.Add(deviceItem);
+                        if (deviceItem.Device.Equals(selectedItem?.Device)) {
+                            newSelectedItem = deviceItem;
+                        }
                     }
                     Dispatcher.UIThread.Post(() => {
                         mnuDevice.Items.Clear();
@@ -83,6 +89,9 @@ public partial class MainWindow : Window {
                         }
                         mnuDevice.SelectedIndex = 0;
                         mnuDevice.IsEnabled = true;
+                        if (newSelectedItem != null) {
+                            mnuDevice.SelectedItem = newSelectedItem;
+                        }
                     });
                 }
             } catch (InvalidOperationException) {

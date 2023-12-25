@@ -295,6 +295,28 @@ public abstract class FtdiDevice {
 
     #endregion EEPROM
 
+
+    #region Overrrides
+
+    /// <summary>
+    /// Returns true if two devices have matching USB handle.
+    /// </summary>
+    /// <param name="obj">Other object.</param>
+    public override bool Equals(object? obj) {
+        if (obj is FtdiDevice other) {
+            return (UsbDeviceHandle == other.UsbDeviceHandle);
+        }
+        return false;
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode() {
+        return UsbDeviceHandle.GetHashCode();
+    }
+
+    #endregion Overrrides
+
+
     /// <summary>
     /// Returns collection of FTDI USB devices.
     /// </summary>
