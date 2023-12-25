@@ -74,7 +74,7 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
 
             FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
                 value: () => { return Device.PulldownPinsInSuspend; },
-                apply: (value) => { Device.RemoteWakeupEnabled = value; }
+                apply: (value) => { Device.PulldownPinsInSuspend = value; }
             );
 
             Tabs.Items.Add(tab);
