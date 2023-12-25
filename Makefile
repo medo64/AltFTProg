@@ -40,6 +40,7 @@ package: clean release
 	@$(eval PACKAGE_DIR = /tmp/$(PACKAGE_NAME)/)
 	-@$(RM) -r $(PACKAGE_DIR)/
 	@mkdir $(PACKAGE_DIR)/
+	@cp -r package/deb/usr/ $(PACKAGE_DIR)/
 	@cp -r package/deb/DEBIAN $(PACKAGE_DIR)/
 	@sed -i "s/MAJOR.MINOR.PATCH/$(DIST_VERSION)/" $(PACKAGE_DIR)/DEBIAN/control
 	@sed -i "s/ARCHITECTURE/$(DEB_BUILD_ARCH)/" $(PACKAGE_DIR)/DEBIAN/control
