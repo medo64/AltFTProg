@@ -29,8 +29,9 @@ clean:
 	@rm -rf bin/* 2>/dev/null
 
 release:
-	@dotnet publish ./src/AltFTProg/ --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
-	@dotnet publish ./src/AltFTProg.Gui/ --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true
+	@dotnet publish ./src/AltFTProg/      --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
+	@dotnet publish ./src/AltFTProg.Dump/ --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true -p:PublishTrimmed=true
+	@dotnet publish ./src/AltFTProg.Gui/  --configuration Release --output ./bin --self-contained true --use-current-runtime -p:PublishReadyToRun=true -p:PublishSingleFile=true
 
 package: clean release
 	$(if $(findstring 0,$(HAS_DPKGDEB)),,$(error Package 'dpkg-deb' not installed))
@@ -57,8 +58,9 @@ package: clean release
 	@find $(PACKAGE_DIR)/ -type f -exec chmod 644 {} +
 	@chmod 755 $(PACKAGE_DIR)/DEBIAN/config $(PACKAGE_DIR)/DEBIAN/p*inst $(PACKAGE_DIR)/DEBIAN/p*rm
 	@install -d $(PACKAGE_DIR)/opt/altftprog/
-	@install bin/altftprog $(PACKAGE_DIR)/opt/altftprog/
-	@install bin/altftprogui $(PACKAGE_DIR)/opt/altftprog/
+	@install bin/altftprog     $(PACKAGE_DIR)/opt/altftprog/
+	@install bin/altftprogdump $(PACKAGE_DIR)/opt/altftprog/
+	@install bin/altftprogui   $(PACKAGE_DIR)/opt/altftprog/
 	@install -m 644 bin/libSkiaSharp.so $(PACKAGE_DIR)/opt/altftprog/
 	@install -m 644 bin/libHarfBuzzSharp.so $(PACKAGE_DIR)/opt/altftprog/
 	@fakeroot dpkg-deb -Z gzip --build $(PACKAGE_DIR)/ > /dev/null
