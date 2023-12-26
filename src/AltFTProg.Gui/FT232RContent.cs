@@ -71,11 +71,6 @@ internal class FT232RContent(Ftdi232RDevice Device) {
                 apply: (value) => { Device.RemoteWakeupEnabled = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
-                value: () => { return Device.PulldownPinsInSuspend; },
-                apply: (value) => { Device.PulldownPinsInSuspend = value; }
-            );
-
             Tabs.Items.Add(tab);
         }
 
@@ -105,6 +100,20 @@ internal class FT232RContent(Ftdi232RDevice Device) {
             FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid, "CBUS 4 Function",
                 value: () => { return Device.CBus4Signal; },
                 apply: (value) => { Device.CBus4Signal = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "High-current I/O",
+                value: () => { return Device.HighCurrentIO; },
+                apply: (value) => { Device.HighCurrentIO = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
+                value: () => { return Device.PulldownPinsInSuspend; },
+                apply: (value) => { Device.PulldownPinsInSuspend = value; }
             );
 
             Tabs.Items.Add(tab);
@@ -166,11 +175,6 @@ internal class FT232RContent(Ftdi232RDevice Device) {
             );
 
             FTContent.NewSeparatorRow(grid);
-
-            FTContent.NewBooleanRow(grid, "High-current I/O",
-                value: () => { return Device.HighCurrentIO; },
-                apply: (value) => { Device.HighCurrentIO = value; }
-            );
 
             FTContent.NewBooleanRow(grid, "External oscillator",
                 value: () => { return Device.ExternalOscillator; },

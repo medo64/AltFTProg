@@ -72,11 +72,6 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 apply: (value) => { Device.RemoteWakeupEnabled = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
-                value: () => { return Device.PulldownPinsInSuspend; },
-                apply: (value) => { Device.PulldownPinsInSuspend = value; }
-            );
-
             Tabs.Items.Add(tab);
         }
 
@@ -124,6 +119,36 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
                 },
                 value: () => { return Device.CBusDriveCurrent; },
                 apply: (value) => { Device.CBusDriveCurrent = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid,"DBUS Slow-slew",
+                value: () => { return Device.DBusSlowSlew; },
+                apply: (value) => { Device.CBusSlowSlew = value; }
+            );
+
+            FTContent.NewBooleanRow(grid,"DBUS Schmitt",
+                value: () => { return Device.DBusSchmittInput; },
+                apply: (value) => { Device.DBusSchmittInput = value; }
+            );
+
+            FTContent.NewTupleRow<int>(grid,"DBUS Drive",
+                new (int, string)[] {
+                    ( 4,  "4 mA"),
+                    ( 8,  "8 mA"),
+                    (12, "12 mA"),
+                    (16, "16 mA")
+                },
+                value: () => { return Device.DBusDriveCurrent; },
+                apply: (value) => { Device.DBusDriveCurrent = value; }
+            );
+
+            FTContent.NewSeparatorRow(grid);
+
+            FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
+                value: () => { return Device.PulldownPinsInSuspend; },
+                apply: (value) => { Device.PulldownPinsInSuspend = value; }
             );
 
             Tabs.Items.Add(tab);
@@ -188,29 +213,6 @@ internal class FTXSeriesContent(FtdiXSeriesDevice Device) {
             FTContent.NewBooleanRow(grid, "RS-485 echo supression",
                 value: () => { return Device.Rs485EchoSuppression; },
                 apply: (value) => { Device.Rs485EchoSuppression = value; }
-            );
-
-            FTContent.NewSeparatorRow(grid);
-
-            FTContent.NewBooleanRow(grid,"DBUS Slow-slew",
-                value: () => { return Device.DBusSlowSlew; },
-                apply: (value) => { Device.CBusSlowSlew = value; }
-            );
-
-            FTContent.NewBooleanRow(grid,"DBUS Schmitt",
-                value: () => { return Device.DBusSchmittInput; },
-                apply: (value) => { Device.DBusSchmittInput = value; }
-            );
-
-            FTContent.NewTupleRow<int>(grid,"DBUS Drive",
-                new (int, string)[] {
-                    ( 4,  "4 mA"),
-                    ( 8,  "8 mA"),
-                    (12, "12 mA"),
-                    (16, "16 mA")
-                },
-                value: () => { return Device.DBusDriveCurrent; },
-                apply: (value) => { Device.DBusDriveCurrent = value; }
             );
 
             Tabs.Items.Add(tab);
