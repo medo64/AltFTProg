@@ -46,7 +46,7 @@ public partial class MainWindow : Window {
 
         var deviceItem = mnuDevice.SelectedItem as DeviceItem;
         var isEnabled = (deviceItem != null);
-        var hasChanged = (deviceItem?.HasChanged ?? false);
+        var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
 
         mnuProgram.IsEnabled = isEnabled && hasChanged;
         mnuLoadTemplate.IsEnabled = isEnabled;
@@ -54,9 +54,8 @@ public partial class MainWindow : Window {
         if (tabMain == null) { return; }
         var device = deviceItem?.Device;
         PopulateDevice(tabMain, device, delegate () {
-            if (deviceItem == null) { return; }
-            deviceItem.HasChanged = true;
-            mnuProgram.IsEnabled = isEnabled;
+            var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
+            mnuProgram.IsEnabled = isEnabled && hasChanged;
         });
     }
 

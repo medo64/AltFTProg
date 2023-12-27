@@ -30,6 +30,9 @@ public abstract class FtdiDevice {
         DeviceType = type;
         EepromBytes = eepromBytes;
         EepromSize = eepromSize;
+
+        OriginalEepromBytes = new byte[EepromBytes.Length];
+        Buffer.BlockCopy(EepromBytes, 0, OriginalEepromBytes, 0, EepromBytes.Length);
     }
 
     private readonly IntPtr UsbDeviceHandle;
@@ -38,6 +41,27 @@ public abstract class FtdiDevice {
     /// EEPROM bytes.
     /// </summary>
     private protected readonly byte[] EepromBytes;
+
+    private readonly byte[] OriginalEepromBytes;
+
+    /// <summary>
+    /// Returns if EEPROM has changed.
+    /// </summary>
+    public bool HasEepromChanged {
+        get {
+            for (var i = 0; i < EepromBytes.Length; i++) {
+                if (EepromBytes[i] != OriginalEepromBytes[i]) { return true; }
+            }
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Restores EEPROM state.
+    /// </summary>
+    public void RestoreEeprom() {
+        Buffer.BlockCopy(OriginalEepromBytes, 0, EepromBytes, 0, EepromBytes.Length);
+    }
 
 
     #region USB Properties
