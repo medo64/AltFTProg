@@ -34,7 +34,7 @@ internal static class FTContent {
         grid.Children.Add(separator);
     }
 
-    public static TextBox NewStringRow(Grid grid, string caption, Func<string> value, Func<string, bool>? validate = null, Action<string>? apply = null, Func<string>? button = null, bool isEnabled = true) {
+    public static TextBox NewStringRow(Action refreshAction, Grid grid, string caption, Func<string> value, Func<string, bool>? validate = null, Action<string>? apply = null, Func<string>? button = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -58,11 +58,15 @@ internal static class FTContent {
             Margin = new Thickness(0, 3),
         };
         box.TextChanged += delegate {
-            var value = box.Text;
-            var isOk = validate?.Invoke(value) ?? true;
+            var oldValue = value.Invoke();
+            var newValue = box.Text;
+            var isOk = validate?.Invoke(newValue) ?? true;
             if (isOk) {
+                if (oldValue.Equals(newValue)) { return; }
                 try {
-                    apply?.Invoke(value);
+                    if (oldValue.Equals(newValue)) { return; }
+                    apply?.Invoke(newValue);
+                    refreshAction.Invoke();
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);
@@ -97,7 +101,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static TextBox NewHexRow(Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, bool isEnabled = true) {
+    public static TextBox NewHexRow(Action refreshAction, Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -125,10 +129,14 @@ internal static class FTContent {
             Margin = new Thickness(0, 3),
         };
         box.TextChanged += delegate {
-            var isOk = int.TryParse(box.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var value) && (validate?.Invoke(value) ?? true);
+            var oldValue = value.Invoke();
+            var isOk = int.TryParse(box.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var newValue) && (validate?.Invoke(newValue) ?? true);
             if (isOk) {
+                if (oldValue.Equals(newValue)) { return; }
                 try {
-                    apply?.Invoke(value);
+                    if (oldValue.Equals(newValue)) { return; }
+                    apply?.Invoke(newValue);
+                    refreshAction.Invoke();
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);
@@ -148,7 +156,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static TextBox NewIntegerRow(Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, string? unit = null, bool isEnabled = true) {
+    public static TextBox NewIntegerRow(Action refreshAction, Grid grid, string caption, Func<int> value, Func<int, bool>? validate = null, Action<int>? apply = null, string? unit = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -180,10 +188,13 @@ internal static class FTContent {
             Margin = new Thickness(0, 3),
         };
         box.TextChanged += delegate {
-            var isOk = int.TryParse(box.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value) && (validate?.Invoke(value) ?? true);
+            var oldValue = value.Invoke();
+            var isOk = int.TryParse(box.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var newValue) && (validate?.Invoke(newValue) ?? true);
             if (isOk) {
                 try {
-                    apply?.Invoke(value);
+                    if (oldValue.Equals(newValue)) { return; }
+                    apply?.Invoke(newValue);
+                    refreshAction.Invoke();
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);
@@ -203,7 +214,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static CheckBox NewBooleanRow(Grid grid, string caption, Func<bool> value, Func<bool, bool>? validate = null, Action<bool>? apply = null, bool isEnabled = true) {
+    public static CheckBox NewBooleanRow(Action refreshAction, Grid grid, string caption, Func<bool> value, Func<bool, bool>? validate = null, Action<bool>? apply = null, bool isEnabled = true) {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -225,7 +236,11 @@ internal static class FTContent {
             Margin = new Thickness(0, 3),
         };
         box.IsCheckedChanged += delegate {
-            apply?.Invoke(box.IsChecked ?? false);
+            var oldValue = value.Invoke();
+            var newValue = box.IsChecked ?? false;
+            if (oldValue.Equals(newValue)) { return; }
+            apply?.Invoke(newValue);
+            refreshAction.Invoke();
         };
         box.SetValue(Grid.ColumnProperty, 1);
         box.SetValue(Grid.RowProperty, row);
@@ -234,7 +249,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static ComboBox NewEnumRow<T>(Grid grid, string caption, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct, Enum {
+    public static ComboBox NewEnumRow<T>(Action refreshAction, Grid grid, string caption, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct, Enum {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -268,7 +283,11 @@ internal static class FTContent {
         box.SelectionChanged += delegate {
             if (box.SelectedItem is ComboEnumItem<T> selectedItem) {
                 try {
-                    apply?.Invoke(selectedItem.Value);
+                    var oldValue = value.Invoke();
+                    var newValue = selectedItem.Value;
+                    if (oldValue.Equals(newValue)) { return; }
+                    apply?.Invoke(newValue);
+                    refreshAction.Invoke();
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);
@@ -286,7 +305,7 @@ internal static class FTContent {
         return box;
     }
 
-    public static ComboBox NewTupleRow<T>(Grid grid, string caption, (T value, string title)[] items, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct {
+    public static ComboBox NewTupleRow<T>(Action refreshAction, Grid grid, string caption, (T value, string title)[] items, Func<T> value, Action<T>? apply = null, bool isEnabled = true) where T : struct {
         var row = grid.RowDefinitions.Count;
         grid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(1, GridUnitType.Auto) });
 
@@ -319,7 +338,11 @@ internal static class FTContent {
         box.SelectionChanged += delegate {
             if (box.SelectedItem is TupleItem<T> selectedItem) {
                 try {
-                    apply?.Invoke(selectedItem.Value);
+                    var oldValue = value.Invoke();
+                    var newValue = selectedItem.Value;
+                    if (oldValue.Equals(newValue)) { return; }
+                    apply?.Invoke(newValue);
+                    refreshAction.Invoke();
                     box.Foreground = GetForegroundBrush();
                 } catch (ArgumentException ex) {
                     box.Foreground = GetForegroundBrush(isError: true);

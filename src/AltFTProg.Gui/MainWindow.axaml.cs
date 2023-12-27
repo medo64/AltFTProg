@@ -46,11 +46,18 @@ public partial class MainWindow : Window {
 
         var deviceItem = mnuDevice.SelectedItem as DeviceItem;
         var isEnabled = (deviceItem != null);
-        mnuProgram.IsEnabled = isEnabled;
+        var hasChanged = (deviceItem?.HasChanged ?? false);
+
+        mnuProgram.IsEnabled = isEnabled && hasChanged;
         mnuLoadTemplate.IsEnabled = isEnabled;
 
         if (tabMain == null) { return; }
-        PopulateDevice(tabMain, deviceItem?.Device);
+        var device = deviceItem?.Device;
+        PopulateDevice(tabMain, device, delegate () {
+            if (deviceItem == null) { return; }
+            deviceItem.HasChanged = true;
+            mnuProgram.IsEnabled = isEnabled;
+        });
     }
 
     public void OnMenuRefresh(object sender, RoutedEventArgs e) {
@@ -148,14 +155,14 @@ public partial class MainWindow : Window {
     #endregion Menu
 
 
-    private static void PopulateDevice(TabControl tabs, FtdiDevice? device) {
+    private static void PopulateDevice(TabControl tabs, FtdiDevice? device, Action refreshAction) {
         tabs.Items.Clear();
 
         if (device != null) {
             if (device is Ftdi232RDevice ft232rDevice) {
-                new FT232RContent(ft232rDevice).Populate(tabs);
+                new FT232RContent(ft232rDevice, refreshAction).Populate(tabs);
             } else if (device is FtdiXSeriesDevice xSeriesDevice) {
-                new FTXSeriesContent(xSeriesDevice).Populate(tabs);
+                new FTXSeriesContent(xSeriesDevice, refreshAction).Populate(tabs);
             } else {
                 var stack = new StackPanel() {
                     VerticalAlignment = VerticalAlignment.Center,

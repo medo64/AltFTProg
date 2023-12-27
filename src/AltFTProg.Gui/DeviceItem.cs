@@ -17,6 +17,8 @@ internal class DeviceItem {
     public FtdiDevice Device { get; }
     public string Title { get; }
 
+    public bool HasChanged { get; set; }
+
 
     public override string ToString() {
         return Title;

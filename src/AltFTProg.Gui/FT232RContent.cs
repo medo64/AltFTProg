@@ -1,21 +1,24 @@
 namespace AltFTProgGui;
+using System;
 using Avalonia.Controls;
 using AltFTProg;
 
-internal class FT232RContent(Ftdi232RDevice Device) {
+internal class FT232RContent(Ftdi232RDevice Device, Action refreshAction) {
 
     public void Populate(TabControl Tabs) {
         {  // USB
             var tab = FTContent.NewTab("USB", out var grid);
 
-            FTContent.NewHexRow(grid, "Vendor ID",
+            FTContent.NewHexRow(refreshAction, grid,
+                "Vendor ID",
                 value: () => { return Device.VendorId; },
                 apply: (value) => { Device.VendorId = (ushort)value; },
                 validate: (value) => { return value is >= 0 and <= 65535; },
                 isEnabled: false  // TODO: allow change in settings
             );
 
-            FTContent.NewHexRow(grid, "Product ID",
+            FTContent.NewHexRow(refreshAction, grid,
+                "Product ID",
                 value: () => { return Device.ProductId; },
                 apply: (value) => { Device.ProductId = (ushort)value; },
                 validate: (value) => { return value is >= 0 and <= 65535; },
@@ -24,19 +27,22 @@ internal class FT232RContent(Ftdi232RDevice Device) {
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewStringRow(grid, "Manufacturer",
+            FTContent.NewStringRow(refreshAction, grid,
+                "Manufacturer",
                 value: () => { return Device.Manufacturer; },
                 apply: (value) => { Device.Manufacturer = value; }
             );
 
-            FTContent.NewStringRow(grid, "Product description",
+            FTContent.NewStringRow(refreshAction, grid,
+                "Product description",
                 value: () => { return Device.ProductDescription; },
                 apply: (value) => { Device.ProductDescription = value; }
             );
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewStringRow(grid, "Serial number",
+            FTContent.NewStringRow(refreshAction, grid,
+                "Serial number",
                 value: () => { return Device.SerialNumber; },
                 apply: (value) => { Device.SerialNumber = value; },
                 button: () => {
@@ -46,19 +52,22 @@ internal class FT232RContent(Ftdi232RDevice Device) {
                 }
             ); // TODO: ask for prefix and length
 
-            FTContent.NewBooleanRow(grid, "Serial number enabled",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Serial number enabled",
                 value: () => { return Device.SerialNumberEnabled; },
                 apply: (value) => { Device.SerialNumberEnabled = value; }
             );
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewBooleanRow(grid, "Bus powered",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Bus powered",
                 value: () => { return Device.BusPowered; },
                 apply: (value) => { Device.BusPowered = value; }
             );
 
-            FTContent.NewIntegerRow(grid, "Maximum bus power",
+            FTContent.NewIntegerRow(refreshAction, grid,
+                "Maximum bus power",
                 value: () => { return Device.MaxBusPower; },
                 apply: (value) => { Device.MaxBusPower = value; },
                 unit: "mA"
@@ -66,7 +75,8 @@ internal class FT232RContent(Ftdi232RDevice Device) {
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewBooleanRow(grid, "Remote wakeup",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Remote wakeup",
                 value: () => { return Device.RemoteWakeupEnabled; },
                 apply: (value) => { Device.RemoteWakeupEnabled = value; }
             );
@@ -77,41 +87,48 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // IO
             var tab = FTContent.NewTab("I/O", out var grid);
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(grid, "CBUS 0 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus0PinSignal>(refreshAction, grid,
+                "CBUS 0 Function",
                 value: () => { return Device.CBus0Signal; },
                 apply: (value) => { Device.CBus0Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(grid, "CBUS 1 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus1PinSignal>(refreshAction, grid,
+                "CBUS 1 Function",
                 value: () => { return Device.CBus1Signal; },
                 apply: (value) => { Device.CBus1Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(grid, "CBUS 2 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus2PinSignal>(refreshAction, grid,
+                "CBUS 2 Function",
                 value: () => { return Device.CBus2Signal; },
                 apply: (value) => { Device.CBus2Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(grid, "CBUS 3 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus3PinSignal>(refreshAction, grid,
+                "CBUS 3 Function",
                 value: () => { return Device.CBus3Signal; },
                 apply: (value) => { Device.CBus3Signal = value; }
             );
 
-            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(grid, "CBUS 4 Function",
+            FTContent.NewEnumRow<Ftdi232RDevice.CBus4PinSignal>(refreshAction, grid,
+                "CBUS 4 Function",
                 value: () => { return Device.CBus4Signal; },
                 apply: (value) => { Device.CBus4Signal = value; }
             );
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewBooleanRow(grid, "High-current I/O",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "High-current I/O",
                 value: () => { return Device.HighCurrentIO; },
                 apply: (value) => { Device.HighCurrentIO = value; }
             );
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewBooleanRow(grid, "Pull-down I/O in suspend",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Pull-down I/O in suspend",
                 value: () => { return Device.PulldownPinsInSuspend; },
                 apply: (value) => { Device.PulldownPinsInSuspend = value; }
             );
@@ -122,42 +139,50 @@ internal class FT232RContent(Ftdi232RDevice Device) {
         {  // Invert
             var tab = FTContent.NewTab("Invert", out var grid);
 
-            FTContent.NewBooleanRow(grid, "Invert TXD",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert TXD",
                 value: () => { return Device.TxdInverted; },
                 apply: (value) => { Device.TxdInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert RXD",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert RXD",
                 value: () => { return Device.RxdInverted; },
                 apply: (value) => { Device.RxdInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert RTS",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert RTS",
                 value: () => { return Device.RtsInverted; },
                 apply: (value) => { Device.RtsInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert CTS",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert CTS",
                 value: () => { return Device.CtsInverted; },
                 apply: (value) => { Device.CtsInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert DTR",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert DTR",
                 value: () => { return Device.DtrInverted; },
                 apply: (value) => { Device.DtrInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert DSR",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert DSR",
                 value: () => { return Device.DsrInverted; },
                 apply: (value) => { Device.DsrInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert DCD",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert DCD",
                 value: () => { return Device.DcdInverted; },
                 apply: (value) => { Device.DcdInverted = value; }
             );
 
-            FTContent.NewBooleanRow(grid, "Invert RI",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "Invert RI",
                 value: () => { return Device.RiInverted; },
                 apply: (value) => { Device.RiInverted = value; }
             );
@@ -169,14 +194,16 @@ internal class FT232RContent(Ftdi232RDevice Device) {
             var tab = FTContent.NewTab("Hardware", out var grid);
 
 
-            FTContent.NewBooleanRow(grid, "D2XX direct driver",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "D2XX direct driver",
                 value: () => { return Device.D2xxDirectDriver; },
                 apply: (value) => { Device.D2xxDirectDriver = value; }
             );
 
             FTContent.NewSeparatorRow(grid);
 
-            FTContent.NewBooleanRow(grid, "External oscillator",
+            FTContent.NewBooleanRow(refreshAction, grid,
+                "External oscillator",
                 value: () => { return Device.ExternalOscillator; },
                 isEnabled: false
             );
