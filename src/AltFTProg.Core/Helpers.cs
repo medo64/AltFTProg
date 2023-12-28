@@ -9,9 +9,10 @@ using System.Text;
 internal static class Helpers {
 
     internal static void GetEepromStrings(byte[] eepromBytes, int eepromSize, out string manufacturer, out string product, out string serial) {
+        var hasSerial = ((eepromBytes[0x10] & 0x08) == 0x08);
         if ((eepromBytes[0x0E] & 0x80) == 0) { throw new InvalidOperationException("Manufacturer EEPROM field not detected."); }
         if ((eepromBytes[0x10] & 0x80) == 0) { throw new InvalidOperationException("Product EEPROM field not detected."); }
-        if ((eepromBytes[0x12] & 0x80) == 0) { throw new InvalidOperationException("Serial EEPROM field not detected."); }
+        if (hasSerial && (eepromBytes[0x12] & 0x80) == 0) { throw new InvalidOperationException("Serial EEPROM field not detected."); }
 
         var offsetManufacturer = eepromBytes[0x0E];
         var offsetProduct = eepromBytes[0x10];
@@ -32,23 +33,23 @@ internal static class Helpers {
 
         if (len1Manufacturer != len2Manufacturer) { throw new InvalidOperationException("Manufacturer EEPROM field length mismatch."); }
         if (len1Product != len2Product) { throw new InvalidOperationException("Product EEPROM field length mismatch."); }
-        if (len1Serial != len2Serial) { throw new InvalidOperationException("Serial EEPROM field length mismatch."); }
+        if (hasSerial && (len1Serial != len2Serial)) { throw new InvalidOperationException("Serial EEPROM field length mismatch."); }
 
         if (len1Manufacturer < 2) { throw new InvalidOperationException("Manufacturer EEPROM field length too small."); }
         if (len1Product < 2) { throw new InvalidOperationException("Product EEPROM field length too small."); }
-        if (len1Serial < 2) { throw new InvalidOperationException("Serial EEPROM field length too small."); }
+        if (hasSerial && (len1Serial < 2)) { throw new InvalidOperationException("Serial EEPROM field length too small."); }
 
         if (offsetManufacturer + len1Manufacturer >= eepromSize) { throw new InvalidOperationException("Manufacturer EEPROM field outside of bound."); }
         if (offsetProduct + len1Product >= eepromSize) { throw new InvalidOperationException("Product EEPROM field outside of bound."); }
-        if (offsetSerial + len1Serial >= eepromSize) { throw new InvalidOperationException("Serial EEPROM field outside of bound."); }
+        if (hasSerial && (offsetSerial + len1Serial >= eepromSize)) { throw new InvalidOperationException("Serial EEPROM field outside of bound."); }
 
         if (eepromBytes[offsetManufacturer + 1] != 0x03) { throw new InvalidOperationException("Manufacturer EEPROM field type mismatch."); }
         if (eepromBytes[offsetProduct + 1] != 0x03) { throw new InvalidOperationException("Product EEPROM field type mismatch."); }
-        if (eepromBytes[offsetSerial + 1] != 0x03) { throw new InvalidOperationException("Serial EEPROM field type mismatch."); }
+        if (hasSerial && (eepromBytes[offsetSerial + 1] != 0x03)) { throw new InvalidOperationException("Serial EEPROM field type mismatch."); }
 
         manufacturer = GetEepromString(eepromBytes, offsetManufacturer, len1Manufacturer);
         product = GetEepromString(eepromBytes, offsetProduct, len1Product);
-        serial = GetEepromString(eepromBytes, offsetSerial, len1Serial);
+        serial = hasSerial ? GetEepromString(eepromBytes, offsetSerial, len1Serial) : "";
     }
 
     internal static string GetEepromString(byte[] eepromBytes, int offset, int length) {
