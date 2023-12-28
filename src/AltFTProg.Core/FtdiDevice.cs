@@ -59,7 +59,7 @@ public abstract class FtdiDevice {
     /// <summary>
     /// Restores EEPROM state.
     /// </summary>
-    public void RestoreEeprom() {
+    public void ResetEeprom() {
         Buffer.BlockCopy(OriginalEepromBytes, 0, EepromBytes, 0, EepromBytes.Length);
     }
 
@@ -296,7 +296,7 @@ public abstract class FtdiDevice {
     /// <summary>
     /// Write any changes to EEPROM.
     /// </summary>
-    public void SaveChanges() {
+    public void SaveEepromChanges() {
         var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
@@ -304,10 +304,13 @@ public abstract class FtdiDevice {
             ThrowIfError(ftdi, "ftdi_usb_open_dev", LibFtdi.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
-                for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
-                    var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
-                    var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
-                    ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
+                var wasSuccess = (LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes) != IntPtr.Zero);
+                if (wasSuccess) {
+                    for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
+                        var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
+                        var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
+                        ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
+                    }
                 }
             } finally {
                 var _ = LibFtdi.ftdi_usb_close(ftdi);
@@ -318,6 +321,15 @@ public abstract class FtdiDevice {
     }
 
     #endregion EEPROM
+
+
+    /// <summary>
+    /// Resets device to default configuration.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Device not supported.</exception>
+    public virtual void ResetEepromToDefaults() {
+        throw new InvalidOperationException("Device not supported.");
+    }
 
 
     #region Overrrides
@@ -388,17 +400,16 @@ public abstract class FtdiDevice {
 
                         var rawEepromBytes = GetRawEepromBytes(usbDeviceHandle);
                         var i = rawEepromBytes.Length - 1;
-                        for (; i >= 0; i--) {
+                        for (; i >= 128; i--) {
                             if (rawEepromBytes[i] != 0xFF) { break; }
                         }
                         var nonEmptyBlockCount = i / 128 + 1;
 
                         var eepromExtraSize = nonEmptyBlockCount * 128;
                         var eepromBytes = new byte[eepromExtraSize];
-                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, eepromBytes.Length);
+                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, rawEepromBytes.Length);
 
                         var type = (FtdiDeviceType)((rawEepromBytes[7] << 8) | rawEepromBytes[6]);
-
                         var eepromSize = eepromExtraSize;
                         if (type == FtdiDeviceType.FT232R) { eepromSize = 128; }  // for some reason FT232R reports 256 bytes, but only 128 are user data
 

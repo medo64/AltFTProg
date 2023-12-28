@@ -28,6 +28,13 @@ internal static class App {
             IsRequired = false,
         };
 
+        var resetEepromOption = new Option<bool>(
+            aliases: new[] { "--reset" },
+            description: "Try to reset EEPROM to defaults") {
+            Arity = ArgumentArity.Zero,
+            IsRequired = false,
+        };
+
         var fixChecksumOption = new Option<bool>(
             aliases: new[] { "--fix-checksum" },
             description: "Forces checksum fixup") {
@@ -38,17 +45,18 @@ internal static class App {
         var rootCommand = new RootCommand() {
             fileArgument,
             verboseOption,
+            resetEepromOption,
             fixChecksumOption,
         };
         rootCommand.SetHandler(
-            (file, isVerbose, fixChecksum) => {
-                Run(file, isVerbose, fixChecksum);
+            (file, isVerbose, resetEeprom, fixChecksum) => {
+                Run(file, isVerbose, resetEeprom, fixChecksum);
             },
-            fileArgument, verboseOption, fixChecksumOption);
+            fileArgument, verboseOption, resetEepromOption, fixChecksumOption);
         rootCommand.Invoke(args);
     }
 
-    private static void Run(FileInfo? file, bool isVerbose, bool fixChecksum) {
+    private static void Run(FileInfo? file, bool isVerbose, bool resetEeprom, bool fixChecksum) {
         XmlSimplified? xml = null;
         if (file != null) {
             xml = new XmlSimplified(file);
@@ -78,13 +86,21 @@ internal static class App {
                 deviceTitle = "FTDI " + GetDeviceTypeShortText(device) + " (" + device.UsbSerialNumber + ")";
             }
 
+            if (resetEeprom) { deviceTitle += " ↺"; }
+
             if ((xml != null) && xml.IsMatchingDevice(device)) { deviceTitle += " ⮜"; }
             Output.WriteLine(deviceTitle);
+
+            if (resetEeprom) {
+                device.ResetEepromToDefaults();
+                device.SaveEepromChanges();
+            }
+
+            Output.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
+            Output.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
             if (isVerbose) {
                 WriteDeviceDetails(device, includeEepromExtras: true);
             } else {
-                Output.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
-                Output.WriteLine("  USB Product ID ......: 0x" + device.UsbProductId.ToString("X4"));
                 Output.WriteLine("  USB Manufacturer ....: " + device.UsbManufacturer);
                 Output.WriteLine("  USB Product .........: " + device.UsbProductDescription);
                 Output.WriteLine("  USB Serial ..........: " + device.UsbSerialNumber);
@@ -94,7 +110,7 @@ internal static class App {
                 if (fixChecksum) { device.IsChecksumValid = true; }
                 var hasModified = Changes.Apply(device, xml.Properties);
                 if (hasModified) {
-                    device.SaveChanges();
+                    device.SaveEepromChanges();
                     if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
                 }
             }
@@ -105,8 +121,6 @@ internal static class App {
         Output.WriteVerboseLine("  Device type .........: " + GetDeviceTypeText(device));
         Output.WriteVerboseLine("  EEPROM size .........: " + device.EepromSize.ToString());
 
-        Output.WriteVerboseLine("  Vendor ID ...........: 0x" + device.VendorId.ToString("X4"));
-        Output.WriteVerboseLine("  Product ID ..........: 0x" + device.ProductId.ToString("X4"));
         Output.WriteVerboseLine("  Power source ........: " + GetBooleanText(device.SelfPowered, "Self-powered", "Bus-powered"));
         Output.WriteVerboseLine("  Maximum bus power ...: " + device.MaxBusPower.ToString() + " mA");
         Output.WriteVerboseLine("  Remote wakeup .......: " + GetBooleanText(device.RemoteWakeupEnabled, "Enabled", "Disabled"));

@@ -146,4 +146,20 @@ internal static class Helpers {
         return byteCount;
     }
 
+    internal static byte[] HexStringToByteArray(string hex) {
+        var hexFiltered = new StringBuilder();
+        foreach (var c in hex) {
+            if (char.IsAsciiHexDigit(c)) {
+                hexFiltered.Append(c);
+            }
+        }
+        hex = hexFiltered.ToString();
+
+        var bytes = new List<byte>();
+        for(var i = 0; i < hex.Length; i += 2) {
+            bytes.Add(Convert.ToByte(hex.Substring(i, 2), 16));
+        }
+        return bytes.ToArray();
+    }
+
 }

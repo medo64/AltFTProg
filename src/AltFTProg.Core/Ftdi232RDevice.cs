@@ -1,5 +1,7 @@
 namespace AltFTProg;
 using System;
+using System.Collections;
+using System.Security.Cryptography;
 
 /// <summary>
 /// FTDI 232R device.
@@ -190,6 +192,36 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
         }
     }
 
+
+    /// <summary>
+    /// Resets device to default configuration.
+    /// </summary>
+    public override void ResetEepromToDefaults() {
+        var defaultEepromHex =
+        @"
+            00 40 03 04 01 60 00 00  A0 2D 08 00 00 00 98 0A
+            A2 20 C2 12 23 10 05 00  0A 03 46 00 54 00 44 00
+            49 00 20 03 46 00 54 00  32 00 33 00 32 00 52 00
+            20 00 55 00 53 00 42 00  20 00 55 00 41 00 52 00
+            54 00 12 03 42 00 30 00  00 00 00 00 00 00 00 00
+            00 00 00 00 58 E1 40 04  00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+        ";
+        var defaultEepromBytes = Helpers.HexStringToByteArray(defaultEepromHex);
+        Buffer.BlockCopy(defaultEepromBytes, 0, EepromBytes, 0, defaultEepromBytes.Length);
+
+        // serial
+        var digitCount = 6;
+        var rndBytes = RandomNumberGenerator.GetBytes(digitCount);
+        for (var i = 0; i < digitCount; i++) {
+            var number = rndBytes[i] % 32;
+            var ch = (number < 26) ? (char)('A' + number) : (char)('2' + (number - 26));
+            EepromBytes[0x48 + i * 2] = (byte)ch;
+        }
+
+        IsChecksumValid = true;  // fixup checksum
+    }
 
 
     /// <summary>
