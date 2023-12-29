@@ -93,7 +93,7 @@ internal static class App {
 
             if (resetEeprom) {
                 device.ResetEepromToDefaults();
-                device.SaveEepromChanges();
+                device.SaveEeprom();
             }
 
             Output.WriteLine("  USB Vendor ID .,,....: 0x" + device.UsbVendorId.ToString("X4"));
@@ -110,7 +110,7 @@ internal static class App {
                 if (fixChecksum) { device.IsChecksumValid = true; }
                 var hasModified = Changes.Apply(device, xml.Properties);
                 if (hasModified) {
-                    device.SaveEepromChanges();
+                    device.SaveEeprom();
                     if (isVerbose) { WriteDeviceDetails(device, includeEepromExtras: true); }
                 }
             }

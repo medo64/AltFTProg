@@ -296,7 +296,7 @@ public abstract class FtdiDevice {
     /// <summary>
     /// Write any changes to EEPROM.
     /// </summary>
-    public void SaveEepromChanges() {
+    public void SaveEeprom() {
         var ftdi = LibFtdi.ftdi_new();
         if (ftdi == IntPtr.Zero) { throw new InvalidOperationException("ftdi_new failed."); }
 
