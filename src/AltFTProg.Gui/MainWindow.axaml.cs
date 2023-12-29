@@ -121,7 +121,7 @@ public partial class MainWindow : Window {
             Cursor = new Cursor(StandardCursorType.Wait);
 
             ThreadPool.QueueUserWorkItem((s) => {
-                deviceItem.Device.SaveChanges();
+                deviceItem.Device.SaveEepromChanges();
                 Dispatcher.UIThread.Post(() => {
                     mnu.IsEnabled = true;
                     Cursor = Cursor.Default;
