@@ -48,7 +48,7 @@ internal class FT232RContent(Ftdi232RDevice Device, Action refreshAction) {
                 button: () => {
                     var prefix = "FT";
                     var digitCount = 6;
-                    return FtdiCommonDevice.GetRandomSerialNumber(prefix, digitCount);
+                    return FtdiDevice.GetRandomSerialNumber(prefix, digitCount);
                 }
             ); // TODO: ask for prefix and length
 

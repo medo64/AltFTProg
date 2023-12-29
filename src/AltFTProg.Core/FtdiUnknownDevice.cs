@@ -6,8 +6,8 @@ using System;
 /// </summary>
 public sealed class FtdiUnknownDevice : FtdiDevice {
 
-    internal FtdiUnknownDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize)
-        : base(usbDeviceHandle, usbVendorId, usbProductId, type, eepromBytes, eepromSize) {
+    internal FtdiUnknownDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes)
+        : base(usbDeviceHandle, usbVendorId, usbProductId, type, eepromBytes) {
     }
 
 }

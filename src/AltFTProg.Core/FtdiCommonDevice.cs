@@ -1,6 +1,5 @@
 namespace AltFTProg;
 using System;
-using System.Security.Cryptography;
 using System.Text;
 
 /// <summary>
@@ -9,76 +8,165 @@ using System.Text;
 /// </summary>
 public abstract class FtdiCommonDevice : FtdiDevice {
 
-    internal FtdiCommonDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize)
-        : base(usbDeviceHandle, usbVendorId, usbProductId, type, eepromBytes, eepromSize) {
+    internal FtdiCommonDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, EepromStrings stringDescriptors)
+        : base(usbDeviceHandle, usbVendorId, usbProductId, type, eepromBytes) {
+        StringDescriptors = stringDescriptors;
     }
 
+    private readonly EepromStrings StringDescriptors;
+
+
+    #region Misc Config @ 0x00 - 0x01
 
     /// <summary>
-    /// Gets/sets if device is self-powered.
+    /// Gets/sets if Virtual COM port driver will be used.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool SelfPowered {
-        get { return (EepromBytes[8] & 0x40) != 0; }
+    public bool VirtualComPortDriver {
+        get { return (EepromBytes[0x00] & 0x08) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x40) | (value ? 0x40 : 0));
+            EepromBytes[0x00] = (byte)((EepromBytes[0x00] & ~0x08) | (value ? 0x08 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
 
     /// <summary>
-    /// Gets/sets device power requirement.
+    /// Gets/sets if D2XX direct driver will be used.
     /// </summary>
-    /// <exception cref="ArgumentOutOfRangeException">Value must be between 0 and 500.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override int MaxBusPower {  // 2 mA unit
-        get { return EepromBytes[9] * 2; }
+    public bool D2xxDirectDriver {
+        get { return !VirtualComPortDriver; }
+        set { VirtualComPortDriver = !value; }
+    }
+
+    #endregion Misc Config @ 0x00 - 0x01
+
+
+    #region USB VID @ 0x02 - 0x03
+
+    /// <summary>
+    /// Gets/sets device vendor ID.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public UInt16 VendorId {
+        get { return (UInt16)((EepromBytes[0x03] << 8) | EepromBytes[0x02]); }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (value is < 0 or > 500) { throw new ArgumentOutOfRangeException(nameof(value), "Value must be between 0 and 500."); }
-            var newValue = (value + 1) / 2;  // round up
-            EepromBytes[9] = (byte)newValue;
+            EepromBytes[0x02] = (byte)(value & 0xFF);
+            EepromBytes[0x03] = (byte)(value >> 8);
             IsChecksumValid = true;  // fixup checksum
         }
     }
+
+    #endregion USB VID @ 0x02
+
+
+    #region USB PID @ 0x04 - 0x05
+
+    /// <summary>
+    /// Gets/sets device product ID.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public UInt16 ProductId {
+        get { return (UInt16)((EepromBytes[0x05] << 8) | EepromBytes[0x04]); }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0x04] = (byte)(value & 0xFF);
+            EepromBytes[0x05] = (byte)(value >> 8);
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    #endregion USB PID @ 0x04 - 0x05
+
+
+    #region Config Description Value @ 0x08
 
     /// <summary>
     /// Gets/sets remote wakeup.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool RemoteWakeupEnabled {
-        get { return base.RemoteWakeupEnabled; }
+    public bool RemoteWakeupEnabled {
+        get { return (EepromBytes[0x08] & 0x20) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[8] = (byte)((EepromBytes[8] & ~0x20) | (value ? 0x20 : 0));
+            EepromBytes[0x08] = (byte)((EepromBytes[0x08] & ~0x20) | (value ? 0x20 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
+
+    /// <summary>
+    /// Gets/sets if device is self-powered.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool SelfPowered {
+        get { return (EepromBytes[0x08] & 0x40) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0x08] = (byte)((EepromBytes[0x08] & ~0x40) | (value ? 0x40 : 0x00));
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    /// <summary>
+    /// Gets/sets if device is bus-powered.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public bool BusPowered {
+        get { return !SelfPowered; }
+        set { SelfPowered = !value; }
+    }
+
+    #endregion Config Description Value @ 0x08
+
+
+    #region MAX Power @ 0x09
+
+    /// <summary>
+    /// Gets/sets device power requirement.
+    /// All values are rounded to higher 2 mA.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Value must be between 1 and 500.</exception>
+    public int MaxBusPower {
+        get { return EepromBytes[0x09] * 2; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (value is < 1 or > 500) { throw new ArgumentOutOfRangeException(nameof(value), "Value must be between 1 and 500."); }
+            var newValue = (value + 1) / 2;  // round up
+            EepromBytes[0x09] = (byte)newValue;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    #endregion MAX Power @ 0x09
+
+
+    #region Device & Peripheral Control @ 0x0A - 0x0B
 
     /// <summary>
     /// Gets/sets if IO pins will be pulled down in USB suspend.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool PulldownPinsInSuspend {
-        get { return (EepromBytes[10] & 0x04) != 0; }
+    public bool PulldownPinsInSuspend {
+        get { return (EepromBytes[0x0A] & 0x04) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[10] = (byte)((EepromBytes[10] & ~0x04) | (value ? 0x04 : 0));
+            EepromBytes[0x0A] = (byte)((EepromBytes[0x0A] & ~0x04) | (value ? 0x04 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
-
 
     /// <summary>
     /// Gets/sets if serial number will be reported by device.
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
-    public override bool SerialNumberEnabled {
-        get { return (EepromBytes[10] & 0x08) != 0; }
+    public bool SerialNumberEnabled {
+        get { return (EepromBytes[0x0A] & 0x08) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[10] = (byte)((EepromBytes[10] & ~0x08) | (value ? 0x08 : 0));
+            EepromBytes[0x0A] = (byte)((EepromBytes[0x0A] & ~0x08) | (value ? 0x08 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -89,10 +177,10 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool TxdInverted {
-        get { return (EepromBytes[11] & 0x01) != 0; }
+        get { return (EepromBytes[0x0B] & 0x01) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x01) | (value ? 0x01 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x01) | (value ? 0x01 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -102,10 +190,10 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// </summary>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool RxdInverted {
-        get { return (EepromBytes[11] & 0x02) != 0; }
+        get { return (EepromBytes[0x0B] & 0x02) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x02) | (value ? 0x02 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x02) | (value ? 0x02 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -117,11 +205,11 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool RtsInverted {
         get {
-            return (EepromBytes[11] & 0x04) != 0;
+            return (EepromBytes[0x0B] & 0x04) != 0;
         }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x04) | (value ? 0x04 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x04) | (value ? 0x04 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -133,11 +221,11 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool CtsInverted {
         get {
-            return (EepromBytes[11] & 0x08) != 0;
+            return (EepromBytes[0x0B] & 0x08) != 0;
         }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x08) | (value ? 0x08 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x08) | (value ? 0x08 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -148,10 +236,10 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool DtrInverted {
-        get { return (EepromBytes[11] & 0x10) != 0; }
+        get { return (EepromBytes[0x0B] & 0x10) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x10) | (value ? 0x10 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x10) | (value ? 0x10 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -163,11 +251,11 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool DsrInverted {
         get {
-            return (EepromBytes[11] & 0x20) != 0;
+            return (EepromBytes[0x0B] & 0x20) != 0;
         }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x20) | (value ? 0x20 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x20) | (value ? 0x20 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -178,10 +266,10 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool DcdInverted {
-        get { return (EepromBytes[11] & 0x40) != 0; }
+        get { return (EepromBytes[0x0B] & 0x40) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x40) | (value ? 0x40 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x40) | (value ? 0x40 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
@@ -192,35 +280,88 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public bool RiInverted {
-        get { return (EepromBytes[11] & 0x80) != 0; }
+        get { return (EepromBytes[0x0B] & 0x80) != 0; }
         set {
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[11] = (byte)((EepromBytes[11] & ~0x80) | (value ? 0x80 : 0));
+            EepromBytes[0x0B] = (byte)((EepromBytes[0x0B] & ~0x80) | (value ? 0x80 : 0x00));
             IsChecksumValid = true;  // fixup checksum
         }
     }
 
+    #endregion Device & Peripheral Control @ 0x0A - 0x0B
+
+
+    #region Manufacturer String Descriptor @ 0x0E - 0x0F
 
     /// <summary>
-    /// Returns random serial number.
+    /// Gets/sets device manufacturer name.
     /// </summary>
-    /// <param name="prefix">Prefix text.</param>
-    /// <param name="digitCount">Number of random digits</param>
-    /// <exception cref="ArgumentNullException">Prefix is not null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Digit count must be larger than 0.</exception>
-    public static string GetRandomSerialNumber(string prefix, int digitCount) {
-        if (prefix == null) { throw new ArgumentNullException(nameof(prefix), "Prefix is not null."); }
-        if (digitCount < 1) { throw new ArgumentOutOfRangeException(nameof(digitCount), "Digit count must be larger than 0."); }
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public string Manufacturer {
+        get { return StringDescriptors.Manufacturer; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (Helpers.CountUnicodeChars(value, ProductDescription, SerialNumber) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
 
-        var rndBytes = RandomNumberGenerator.GetBytes(digitCount);
-        var sb = new StringBuilder(prefix);
-        for (var i = 0; i < digitCount; i++) {
-            var number = rndBytes[i] % 32;
-            var ch = (number < 26) ? (char)('A' + number) : (char)('2' + (number - 26));
-            sb.Append(ch);
+            StringDescriptors.Manufacturer = value;
+            IsChecksumValid = true;  // fixup checksum
         }
-        return sb.ToString();
     }
 
+    #endregion Manufacturer String Descriptor @ 0x0E - 0x0F
+
+
+    #region Product String Descriptor @ 0x10 - 0x11
+
+    /// <summary>
+    /// Gets/sets device product name.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public string ProductDescription {
+        get { return StringDescriptors.ProductDescription; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (Helpers.CountUnicodeChars(Manufacturer, value, SerialNumber) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
+
+            StringDescriptors.ProductDescription = value;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    #endregion Product String Descriptor @ 0x10 - 0x11
+
+
+    #region Serial Number String Descriptor @ 0x12 - 0x13
+
+    /// <summary>
+    /// Gets/sets device serial number.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public string SerialNumber {
+        get { return StringDescriptors.SerialNumber; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            if (Helpers.CountUnicodeChars(value) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
+            if (Helpers.CountUnicodeChars(Manufacturer, ProductDescription, value) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
+
+            StringDescriptors.SerialNumber = value;
+            IsChecksumValid = true;  // fixup checksum
+        }
+    }
+
+    #endregion Serial Number String Descriptor @ 0x12 - 0x13
+
+
+    /// <summary>
+    /// Gets/sets if checksum is valid.
+    /// If checksum is not valid, it can be made valid by setting the property to true.
+    /// </summary>
+    public abstract bool IsChecksumValid { get; set; }
 
 }

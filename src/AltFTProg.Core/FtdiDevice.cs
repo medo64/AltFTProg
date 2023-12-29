@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using AltFTProg.NativeMethods;
 
@@ -21,50 +22,33 @@ public abstract class FtdiDevice {
     /// <param name="usbProductId">Product ID as retrieved from USB.</param>
     /// <param name="type">Assumed device type.</param>
     /// <param name="eepromBytes">EEPROM bytes.</param>
-    /// <param name="eepromSize">Size of base EEPROM.</param>
-    private protected FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes, int eepromSize) {
+    private protected FtdiDevice(IntPtr usbDeviceHandle, int usbVendorId, int usbProductId, FtdiDeviceType type, byte[] eepromBytes) {
         UsbDeviceHandle = usbDeviceHandle;
         UsbVendorId = usbVendorId;
         UsbProductId = usbProductId;
 
         DeviceType = type;
+
         EepromBytes = eepromBytes;
-        EepromSize = eepromSize;
-
-        OriginalEepromBytes = new byte[EepromBytes.Length];
-        Buffer.BlockCopy(EepromBytes, 0, OriginalEepromBytes, 0, EepromBytes.Length);
+        OriginalEepromBytes = new byte[eepromBytes.Length];
+        Buffer.BlockCopy(eepromBytes, 0, OriginalEepromBytes, 0, OriginalEepromBytes.Length);
     }
 
-    private readonly IntPtr UsbDeviceHandle;
 
     /// <summary>
-    /// EEPROM bytes.
+    /// Gets device type.
     /// </summary>
-    private protected readonly byte[] EepromBytes;
-
-    private readonly byte[] OriginalEepromBytes;
+    public FtdiDeviceType DeviceType { get; }
 
     /// <summary>
-    /// Returns if EEPROM has changed.
+    /// Gets EEPROM size.
     /// </summary>
-    public bool HasEepromChanged {
-        get {
-            for (var i = 0; i < EepromBytes.Length; i++) {
-                if (EepromBytes[i] != OriginalEepromBytes[i]) { return true; }
-            }
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Restores EEPROM state.
-    /// </summary>
-    public void ResetEeprom() {
-        Buffer.BlockCopy(OriginalEepromBytes, 0, EepromBytes, 0, EepromBytes.Length);
-    }
+    public int EepromSize { get { return EepromBytes.Length; } }
 
 
     #region USB Properties
+
+    private readonly IntPtr UsbDeviceHandle;
 
     /// <summary>
     /// Gets USB device vendor ID.
@@ -117,180 +101,41 @@ public abstract class FtdiDevice {
     #endregion USB Properties
 
 
-    /// <summary>
-    /// Gets EEPROM size.
-    /// </summary>
-    public int EepromSize { get; }
-
-    /// <summary>
-    /// Gets device type.
-    /// </summary>
-    public FtdiDeviceType DeviceType { get; }
-
-
-    /// <summary>
-    /// Gets/sets device vendor ID.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public UInt16 VendorId {
-        get {
-            return (UInt16)(EepromBytes[3] << 8 | EepromBytes[2]);
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[2] = (byte)(value & 0xFF);
-            EepromBytes[3] = (byte)(value >> 8);
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-    /// <summary>
-    /// Gets/sets device product ID.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported. -or- Current checksum is invalid.</exception>
-    public UInt16 ProductId {
-        get {
-            return (UInt16)(EepromBytes[5] << 8 | EepromBytes[4]);
-        }
-        set {
-            if (DeviceType is not (FtdiDeviceType.FT232R or FtdiDeviceType.FTXSeries)) { throw new InvalidOperationException("Device not supported."); }
-            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            EepromBytes[4] = (byte)(value & 0xFF);
-            EepromBytes[5] = (byte)(value >> 8);
-            IsChecksumValid = true;  // fixup checksum
-        }
-    }
-
-
-    /// <summary>
-    /// Gets/sets if device is bus-powered.
-    /// </summary>
-    public bool BusPowered {
-        get { return !SelfPowered; }
-        set { SelfPowered = !value; }
-    }
-
-    /// <summary>
-    /// Gets/sets if device is self-powered.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool SelfPowered {
-        get { return (EepromBytes[8] & 0x40) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets device power requirement.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual int MaxBusPower {
-        get { return EepromBytes[9] * 2; }  // 2 mA unit
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets remote wakeup.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool RemoteWakeupEnabled {
-        get { return (EepromBytes[8] & 0x20) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets if IO pins will be pulled down in USB suspend.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool PulldownPinsInSuspend {
-        get { return (EepromBytes[10] & 0x04) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-
-    /// <summary>
-    /// Gets/sets device manufacturer name.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual string Manufacturer {
-        get {
-            Helpers.GetEepromStrings(EepromBytes, EepromSize, out var manufacturer, out _, out _);
-            return manufacturer;
-        }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets device product name.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual string ProductDescription {
-        get {
-            Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out var product, out _);
-            return product;
-        }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets if serial number will be reported by device.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual bool SerialNumberEnabled {
-        get { return (EepromBytes[10] & 0x08) != 0; }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-    /// <summary>
-    /// Gets/sets device serial number.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual string SerialNumber {
-        get {
-            Helpers.GetEepromStrings(EepromBytes, EepromSize, out _, out _, out var serial);
-            return serial;
-        }
-        set { throw new InvalidOperationException("Device not supported."); }
-    }
-
-
-    /// <summary>
-    /// Gets/sets if checksum is valid.
-    /// If checksum is not valid, it can be made valid by setting the property to true.
-    /// </summary>
-    /// <exception cref="ArgumentException">Checksum validity cannot be set to false.</exception>
-    public bool IsChecksumValid {
-        get {
-            var eepromChecksum = (UInt16)(EepromBytes[EepromSize - 1] << 8 | EepromBytes[EepromSize - 2]);
-            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize);
-            return (eepromChecksum == checksum);
-        }
-        set {
-            if (value == false) { throw new ArgumentException("Checksum validity cannot be set to false.", nameof(value)); }
-            var checksum = Helpers.GetChecksum(EepromBytes, EepromSize);
-            EepromBytes[EepromSize - 2] = (byte)(checksum & 0xFF);
-            EepromBytes[EepromSize - 1] = (byte)(checksum >> 8);
-        }
-    }
-
-
     #region EEPROM
+
+    /// <summary>
+    /// EEPROM bytes.
+    /// </summary>
+    private protected readonly byte[] EepromBytes;
+
+    private readonly byte[] OriginalEepromBytes;
+
+    /// <summary>
+    /// Returns if EEPROM has changed.
+    /// </summary>
+    public bool HasEepromChanged {
+        get {
+            for (var i = 0; i < EepromBytes.Length; i++) {
+                if (EepromBytes[i] != OriginalEepromBytes[i]) { return true; }
+            }
+            return false;
+        }
+    }
 
     /// <summary>
     /// Returns all EEPROM bytes for the USB device.
     /// </summary>
     public byte[] GetEepromBytes() {
-        return GetEepromBytes(includeExtras: false);
+        var eepromBytes = new byte[EepromBytes.Length];
+        Buffer.BlockCopy(EepromBytes, 0, eepromBytes, 0, eepromBytes.Length);
+        return eepromBytes;
     }
 
     /// <summary>
-    /// Returns all EEPROM bytes for the USB device.
+    /// Restores EEPROM state.
     /// </summary>
-    /// <param name="includeExtras">Include extra EEPROM data.</param>
-    public byte[] GetEepromBytes(bool includeExtras) {
-        var eepromBytes = new byte[includeExtras ? EepromBytes.Length : EepromSize];
-        Buffer.BlockCopy(EepromBytes, 0, eepromBytes, 0, eepromBytes.Length);
-        return eepromBytes;
+    public void ResetEeprom() {
+        Buffer.BlockCopy(OriginalEepromBytes, 0, EepromBytes, 0, EepromBytes.Length);
     }
 
     /// <summary>
@@ -304,14 +149,17 @@ public abstract class FtdiDevice {
             ThrowIfError(ftdi, "ftdi_usb_open_dev", LibFtdi.ftdi_usb_open_dev(ftdi, UsbDeviceHandle));
 
             try {
-                var wasSuccess = (LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes) != IntPtr.Zero);
-                if (wasSuccess) {
-                    for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
-                        var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
-                        var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
-                        ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
-                    }
+                // some devices don't write all bytes properly (XSeries)
+                for (var i = 0; i < EepromSize / 2; i++) {  // ftdi_write_eeprom doesn't work for 256 byte EEPROMs
+                    var value = (ushort)((EepromBytes[i * 2 + 1] << 8) | EepromBytes[i * 2]);
+                    var writeLocRes = LibFtdi.ftdi_write_eeprom_location(ftdi, i, value);
+                    ThrowIfError(ftdi, "ftdi_write_eeprom_location", writeLocRes);
                 }
+
+                // some devices don't write all bytes properly (FT232)
+                var writeRes = LibFtdi.ftdi_write_eeprom(ftdi, EepromBytes);
+                ThrowIfError(ftdi, "ftdi_write_eeprom", writeRes);
+
             } finally {
                 var _ = LibFtdi.ftdi_usb_close(ftdi);
             }
@@ -321,15 +169,6 @@ public abstract class FtdiDevice {
     }
 
     #endregion EEPROM
-
-
-    /// <summary>
-    /// Resets device to default configuration.
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Device not supported.</exception>
-    public virtual void ResetEepromToDefaults() {
-        throw new InvalidOperationException("Device not supported.");
-    }
 
 
     #region Overrrides
@@ -351,6 +190,28 @@ public abstract class FtdiDevice {
     }
 
     #endregion Overrrides
+
+
+    /// <summary>
+    /// Returns random serial number.
+    /// </summary>
+    /// <param name="prefix">Prefix text.</param>
+    /// <param name="digitCount">Number of random digits</param>
+    /// <exception cref="ArgumentNullException">Prefix is not null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Digit count must be larger than 0.</exception>
+    public static string GetRandomSerialNumber(string prefix, int digitCount) {
+        if (prefix == null) { throw new ArgumentNullException(nameof(prefix), "Prefix is not null."); }
+        if (digitCount < 1) { throw new ArgumentOutOfRangeException(nameof(digitCount), "Digit count must be larger than 0."); }
+
+        var rndBytes = RandomNumberGenerator.GetBytes(digitCount);
+        var sb = new StringBuilder(prefix);
+        for (var i = 0; i < digitCount; i++) {
+            var number = rndBytes[i] % 32;
+            var ch = (number < 26) ? (char)('A' + number) : (char)('2' + (number - 26));
+            sb.Append(ch);
+        }
+        return sb.ToString();
+    }
 
 
     /// <summary>
@@ -384,6 +245,7 @@ public abstract class FtdiDevice {
 
         try {
             foreach (var vidPid in vidPids) {
+                Helpers.WriteDebug($"Processing VID={vidPid.Key:X4} PID={vidPid.Value:X4}");
                 var vendorId = vidPid.Key;
                 var productId = vidPid.Value;
 
@@ -404,24 +266,31 @@ public abstract class FtdiDevice {
                             if (rawEepromBytes[i] != 0xFF) { break; }
                         }
                         var nonEmptyBlockCount = i / 128 + 1;
-
-                        var eepromExtraSize = nonEmptyBlockCount * 128;
-                        var eepromBytes = new byte[eepromExtraSize];
-                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, Math.Min(eepromBytes.Length, rawEepromBytes.Length));
+                        Helpers.WriteDebug($"rawEepromBytes {nonEmptyBlockCount * 128} bytes ({nonEmptyBlockCount} blocks)");
 
                         var type = (FtdiDeviceType)((rawEepromBytes[7] << 8) | rawEepromBytes[6]);
-                        var eepromSize = eepromExtraSize;
-                        if (type == FtdiDeviceType.FT232R) { eepromSize = 128; }  // for some reason FT232R reports 256 bytes, but only 128 are user data
+                        if ((type == 0) && (rawEepromBytes.Length == 256)) { type = FtdiDeviceType.FT232R; }  // guess
 
                         FtdiDevice device;
                         switch (type) {
-                            case FtdiDeviceType.FT232R: device = new Ftdi232RDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize); break;
-                            case FtdiDeviceType.FTXSeries: device = new FtdiXSeriesDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize); break;
-                            default:
-                                if ((type == 0) && (eepromSize == 256) && (rawEepromBytes.Length == 256)) {
-                                    device = new Ftdi232RDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, 128);
-                                } else {
-                                    device = new FtdiUnknownDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes, eepromSize);
+                            case FtdiDeviceType.FT232R: {
+                                    var eepromBytes = new byte[256];
+                                    Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, Math.Min(eepromBytes.Length, rawEepromBytes.Length));
+                                    device = new Ftdi232RDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes);
+                                }
+                                break;
+                            case FtdiDeviceType.FTXSeries: {
+                                    var eepromBytes = new byte[256];
+                                    Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, Math.Min(eepromBytes.Length, rawEepromBytes.Length));
+                                    device = new FtdiXSeriesDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes);
+                                }
+                                break;
+
+                            default: {
+                                        var eepromExtraSize = nonEmptyBlockCount * 128;
+                                        var eepromBytes = new byte[eepromExtraSize];
+                                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, Math.Min(eepromBytes.Length, rawEepromBytes.Length));
+                                        device = new FtdiUnknownDevice(deviceStruct.dev, vendorId, productId, type, eepromBytes);
                                 }
                                 break;
                         };
@@ -479,6 +348,7 @@ public abstract class FtdiDevice {
             try {
                 var rawEepromBytes = new byte[4096];
                 var len = LibFtdi.ftdi_read_eeprom_getsize(ftdi, rawEepromBytes, rawEepromBytes.Length);
+                Helpers.WriteDebug($"ftdi_read_eeprom_getsize len={len}");
                 ThrowIfError(ftdi, "ftdi_read_eeprom", len);
 
                 var eepromBytes = new byte[len];

@@ -40,7 +40,7 @@ internal static class App {
                                 + device.UsbProductDescription
                                 + "\""
                         );
-                var bytes = device.GetEepromBytes(includeExtras: true);
+                var bytes = device.GetEepromBytes();
                 for (var i = 0; i < bytes.Length; i += 16) {
                     Console.Write("  ");
                     for (var j = 0; j < 16; j++) {

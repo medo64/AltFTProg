@@ -8,35 +8,38 @@ using System.Text;
 internal static class Changes {
 
     public static bool Apply(FtdiDevice device, ReadOnlyCollection<KeyValuePair<string, string>> properties) {
+        var deviceCommon = device as FtdiCommonDevice;
         var device232R = device as Ftdi232RDevice;
         var deviceXSeries = device as FtdiXSeriesDevice;
 
-        var hasModified = false;
         string serialNumberPrefix = "";
 
         foreach (var property in properties) {
             var name = property.Key;
             var value = property.Value;
             switch (name) {
-                case "USB_Device_Descriptor/VID_PID":
-                    if (!value.Equals("0")) { Output.WriteWarningLine($"  Cannot set {name}: {value}"); break; }
-                    break;
-
-                case "USB_Device_Descriptor/idVendor":
-                    var newVendorId = ushort.Parse(value, NumberStyles.HexNumber);
-                    if (device.VendorId != newVendorId) {
-                        device.VendorId = newVendorId;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_Device_Descriptor/VID_PID": {
+                        if (!value.Equals("0")) { Output.WriteWarningLine($"  Cannot set {name}: {value}"); break; }
                     }
                     break;
 
-                case "USB_Device_Descriptor/idProduct":
-                    var newProductId = ushort.Parse(value, NumberStyles.HexNumber);
-                    if (device.ProductId != newProductId) {
-                        device.ProductId = newProductId;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_Device_Descriptor/idVendor": {
+                        var newVendorId = ushort.Parse(value, NumberStyles.HexNumber);
+                        if (deviceCommon != null) {
+                            deviceCommon.VendorId = newVendorId;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
+                    }
+                    break;
+
+                case "USB_Device_Descriptor/idProduct": {
+                        var newProductId = ushort.Parse(value, NumberStyles.HexNumber);
+                        if (deviceCommon != null) {
+                            deviceCommon.ProductId = newProductId;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
@@ -44,85 +47,93 @@ internal static class Changes {
                     // ignore it
                     break;
 
-                case "bmAttributes/RemoteWakeupEnabled":
-                    var newRemoteWakeupEnabled = bool.Parse(value);
-                    if (device.RemoteWakeupEnabled != newRemoteWakeupEnabled) {
-                        device.RemoteWakeupEnabled = newRemoteWakeupEnabled;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "bmAttributes/RemoteWakeupEnabled": {
+                        var newRemoteWakeupEnabled = bool.Parse(value);
+                        if (deviceCommon != null) {
+                            deviceCommon.RemoteWakeupEnabled = newRemoteWakeupEnabled;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "bmAttributes/SelfPowered":
-                    var newSelfPowered = bool.Parse(value);
-                    if (device.SelfPowered != newSelfPowered) {
-                        device.SelfPowered = newSelfPowered;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "bmAttributes/SelfPowered": {
+                        var newSelfPowered = bool.Parse(value);
+                        if (deviceCommon != null) {
+                            deviceCommon.SelfPowered = newSelfPowered;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "bmAttributes/BusPowered":
-                    var newBusPowered = bool.Parse(value);
-                    if (device.BusPowered != newBusPowered) {
-                        device.BusPowered = newBusPowered;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "bmAttributes/BusPowered": {
+                        var newBusPowered = bool.Parse(value);
+                        if (deviceCommon != null) {
+                            deviceCommon.BusPowered = newBusPowered;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
                 case "USB_Config_Descriptor/IOpullDown":
                     var newPulldownPinsInSuspend = bool.Parse(value);
-                    if (device.PulldownPinsInSuspend != newPulldownPinsInSuspend) {
-                        device.PulldownPinsInSuspend = newPulldownPinsInSuspend;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                    if (deviceCommon != null) {
+                        deviceCommon.PulldownPinsInSuspend = newPulldownPinsInSuspend;
+                    } else {
+                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "USB_Config_Descriptor/MaxPower":
-                    var newMaxBusPower = int.Parse(value);
-                    if (device.MaxBusPower != newMaxBusPower) {
-                        device.MaxBusPower = newMaxBusPower;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_Config_Descriptor/MaxPower": {
+                        var newMaxBusPower = int.Parse(value);
+                        if (deviceCommon != null) {
+                            deviceCommon.MaxBusPower = newMaxBusPower;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "USB_String_Descriptors/Manufacturer":
-                    var newManufacturer = value.Trim();
-                    if (!device.Manufacturer.Equals(newManufacturer, StringComparison.Ordinal)) {
-                        device.Manufacturer = newManufacturer;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_String_Descriptors/Manufacturer": {
+                        var newManufacturer = value.Trim();
+                        if (deviceCommon != null) {
+                            deviceCommon.Manufacturer = newManufacturer;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "USB_String_Descriptors/Product_Description":
-                    var newProductDescription = value.Trim();
-                    if (!device.ProductDescription.Equals(newProductDescription, StringComparison.Ordinal)) {
-                        device.ProductDescription = newProductDescription;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_String_Descriptors/Product_Description": {
+                        var newProductDescription = value.Trim();
+                        if (deviceCommon != null) {
+                            deviceCommon.ProductDescription = newProductDescription;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "USB_String_Descriptors/SerialNumber_Enabled":
-                    var newSerialNumberEnabled = bool.Parse(value);
-                    if (device.SerialNumberEnabled != newSerialNumberEnabled) {
-                        device.SerialNumberEnabled = newSerialNumberEnabled;
-                        Output.WriteLine($"  Setting {name}: {value}");
-                        hasModified = true;
+                case "USB_String_Descriptors/SerialNumber_Enabled": {
+                        var newSerialNumberEnabled = bool.Parse(value);
+                        if (deviceCommon != null) {
+                            deviceCommon.SerialNumberEnabled = newSerialNumberEnabled;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
-                case "USB_String_Descriptors/SerialNumber":
-                    var newSerialNumber = value.Trim();
-                    if (newSerialNumber.Length > 0) {
-                        if (!device.SerialNumber.Equals(newSerialNumber, StringComparison.Ordinal)) {
-                            device.SerialNumber = newSerialNumber;
-                            Output.WriteLine($"  Setting SerialNumber: {newSerialNumber}");
-                            hasModified = true;
+                case "USB_String_Descriptors/SerialNumber": {
+                        var newSerialNumber = value.Trim();
+                        if (newSerialNumber.Length > 0) {
+                            if (deviceCommon != null) {
+                                deviceCommon.SerialNumber = newSerialNumber;
+                            } else {
+                                Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                            }
                         }
                     }
                     break;
@@ -131,70 +142,57 @@ internal static class Changes {
                     serialNumberPrefix = value.Trim();
                     break;
 
-                case "USB_String_Descriptors/SerialNumber_AutoGenerate":
-                    if (bool.Parse(value)) {
-                        var newGeneratedSerialNumber = FtdiCommonDevice.GetRandomSerialNumber(serialNumberPrefix, 6);
-                        device.SerialNumber = newGeneratedSerialNumber;
-                        Output.WriteLine($"  Setting SerialNumber: {newGeneratedSerialNumber}");
-                        hasModified = true;
+                case "USB_String_Descriptors/SerialNumber_AutoGenerate": {
+                        if (bool.Parse(value)) {
+                            var newGeneratedSerialNumber = FtdiDevice.GetRandomSerialNumber(serialNumberPrefix, 6);
+                            if (deviceCommon != null) {
+                                deviceCommon.SerialNumber = newGeneratedSerialNumber;
+                            } else {
+                                Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                            }
+                        }
                     }
                     break;
 
-                case "Hardware_Specific/HighIO":
-                    var newHighCurrentIO = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.HighCurrentIO != newHighCurrentIO) {
+                case "Hardware_Specific/HighIO": {
+                        var newHighCurrentIO = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.HighCurrentIO = newHighCurrentIO;
-                            Output.WriteLine($"  Setting {name}: {value}");
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
                 case "Hardware_Specific/D2XX":
-                case "Driver/D2XX":
-                    var newD2xxDirectDriver = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.D2xxDirectDriver != newD2xxDirectDriver) {
+                case "Driver/D2XX": {
+                        var newD2xxDirectDriver = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.D2xxDirectDriver = newD2xxDirectDriver;
-                            Output.WriteLine($"  Setting {name}: {value}");
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.D2xxDirectDriver != newD2xxDirectDriver) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.D2xxDirectDriver = newD2xxDirectDriver;
-                            Output.WriteLine($"  Setting {name}: {value}");
-                            hasModified = true;
-                        }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                    }
-                    break;
-
-                case "Driver/VCP":
-                    var newVirtualComPortDriver = bool.Parse(value);
-                    if (deviceXSeries != null) {
-                        if (deviceXSeries.VirtualComPortDriver != newVirtualComPortDriver) {
-                            deviceXSeries.VirtualComPortDriver = newVirtualComPortDriver;
-                            Output.WriteLine($"  Setting {name}: {value}");
-                            hasModified = true;
-                        }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                    }
-                    break;
-
-
-                case "Hardware_Specific/ExternalOscillator":
-                    var newExternalOscillator = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.ExternalOscillator != newExternalOscillator) {
+                        } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                    }
+                    break;
+
+                case "Driver/VCP": {
+                        var newVirtualComPortDriver = bool.Parse(value);
+                        if (deviceXSeries != null) {
+                            deviceXSeries.VirtualComPortDriver = newVirtualComPortDriver;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
+                    }
+                    break;
+
+
+                case "Hardware_Specific/ExternalOscillator": {
+                        var newExternalOscillator = bool.Parse(value);
+                        if (newExternalOscillator) {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
+                        }
                     }
                     break;
 
@@ -202,14 +200,13 @@ internal static class Changes {
                     //ignore
                     break;
 
-                case "Hardware_Specific/RS485_Echo_Suppress":
-                    var newRs485EchoSuppression = bool.Parse(value);
-                    if (deviceXSeries != null) {
-                        if (deviceXSeries.Rs485EchoSuppression != newRs485EchoSuppression) {
+                case "Hardware_Specific/RS485_Echo_Suppress": {
+                        var newRs485EchoSuppression = bool.Parse(value);
+                        if (deviceXSeries != null) {
+                            deviceXSeries.Rs485EchoSuppression = newRs485EchoSuppression;
+                        } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
@@ -217,149 +214,106 @@ internal static class Changes {
                     //ignore
                     break;
 
-                case "Invert_RS232_Signals/TXD":
-                    var newTxdInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.TxdInverted != newTxdInverted) {
+                case "Invert_RS232_Signals/TXD": {
+                        var newTxdInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.TxdInverted = newTxdInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.TxdInverted != newTxdInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.TxdInverted = newTxdInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/RXD":
-                    var newRxdInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.RxdInverted != newRxdInverted) {
+                case "Invert_RS232_Signals/RXD": {
+                        var newRxdInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.RxdInverted = newRxdInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.RxdInverted != newRxdInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.RxdInverted = newRxdInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/RTS":
-                    var newRtsInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.RtsInverted != newRtsInverted) {
+                case "Invert_RS232_Signals/RTS": {
+                        var newRtsInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.RtsInverted = newRtsInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.RtsInverted != newRtsInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.RtsInverted = newRtsInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/CTS":
-                    var newCtsInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.CtsInverted != newCtsInverted) {
+                case "Invert_RS232_Signals/CTS": {
+                        var newCtsInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.CtsInverted = newCtsInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.CtsInverted != newCtsInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.CtsInverted = newCtsInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/DTR":
-                    var newDtrInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.DtrInverted != newDtrInverted) {
+                case "Invert_RS232_Signals/DTR": {
+                        var newDtrInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.DtrInverted = newDtrInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.DtrInverted != newDtrInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.DtrInverted = newDtrInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/DSR":
-                    var newDsrInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.DsrInverted != newDsrInverted) {
+                case "Invert_RS232_Signals/DSR": {
+                        var newDsrInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.DsrInverted = newDsrInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.DsrInverted != newDsrInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.DsrInverted = newDsrInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/DCD":
-                    var newDcdInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.DcdInverted != newDcdInverted) {
+                case "Invert_RS232_Signals/DCD": {
+                        var newDcdInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.DcdInverted = newDcdInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.DcdInverted != newDcdInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.DcdInverted = newDcdInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
-                case "Invert_RS232_Signals/RI":
-                    var newRiInverted = bool.Parse(value);
-                    if (device232R != null) {
-                        if (device232R.RiInverted != newRiInverted) {
+                case "Invert_RS232_Signals/RI": {
+                        var newRiInverted = bool.Parse(value);
+                        if (device232R != null) {
                             device232R.RiInverted = newRiInverted;
-                            hasModified = true;
-                        }
-                    } else if (deviceXSeries != null) {
-                        if (deviceXSeries.RiInverted != newRiInverted) {
+                        } else if (deviceXSeries != null) {
                             deviceXSeries.RiInverted = newRiInverted;
-                            hasModified = true;
+                        } else {
+                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
-                    } else {
-                        Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
                     break;
 
                 case "IO_Controls/C0": {
                         var newCBus0Signal = ParseCBus0FT232Signal(value);
                         if (device232R != null) {
-                            if (device232R.CBus0Signal != newCBus0Signal) {
-                                device232R.CBus0Signal = newCBus0Signal;
-                                hasModified = true;
-                            }
+                            device232R.CBus0Signal = newCBus0Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -369,10 +323,7 @@ internal static class Changes {
                 case "IO_Controls/C1": {
                         var newCBus1Signal = ParseCBus1FT232Signal(value);
                         if (device232R != null) {
-                            if (device232R.CBus1Signal != newCBus1Signal) {
-                                device232R.CBus1Signal = newCBus1Signal;
-                                hasModified = true;
-                            }
+                            device232R.CBus1Signal = newCBus1Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -382,10 +333,7 @@ internal static class Changes {
                 case "IO_Controls/C2": {
                         var newCBus2Signal = ParseCBus2FT232Signal(value);
                         if (device232R != null) {
-                            if (device232R.CBus2Signal != newCBus2Signal) {
-                                device232R.CBus2Signal = newCBus2Signal;
-                                hasModified = true;
-                            }
+                            device232R.CBus2Signal = newCBus2Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -395,10 +343,7 @@ internal static class Changes {
                 case "IO_Controls/C3": {
                         var newCBus3Signal = ParseCBus3FT232Signal(value);
                         if (device232R != null) {
-                            if (device232R.CBus3Signal != newCBus3Signal) {
-                                device232R.CBus3Signal = newCBus3Signal;
-                                hasModified = true;
-                            }
+                            device232R.CBus3Signal = newCBus3Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -408,10 +353,7 @@ internal static class Changes {
                 case "IO_Controls/C4": {
                         var newCBus4Signal = ParseCBus4FT232Signal(value);
                         if (device232R != null) {
-                            if (device232R.CBus4Signal != newCBus4Signal) {
-                                device232R.CBus4Signal = newCBus4Signal;
-                                hasModified = true;
-                            }
+                            device232R.CBus4Signal = newCBus4Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -421,10 +363,7 @@ internal static class Changes {
                 case "CBUS_Signals/C0": {
                         var newCBus0Signal = ParseCBus4FTXSeriesSignal(value);
                         if (deviceXSeries != null) {
-                            if (deviceXSeries.CBus0Signal != newCBus0Signal) {
-                                deviceXSeries.CBus0Signal = newCBus0Signal;
-                                hasModified = true;
-                            }
+                            deviceXSeries.CBus0Signal = newCBus0Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -434,10 +373,7 @@ internal static class Changes {
                 case "CBUS_Signals/C1": {
                         var newCBus1Signal = ParseCBus4FTXSeriesSignal(value);
                         if (deviceXSeries != null) {
-                            if (deviceXSeries.CBus1Signal != newCBus1Signal) {
-                                deviceXSeries.CBus1Signal = newCBus1Signal;
-                                hasModified = true;
-                            }
+                            deviceXSeries.CBus1Signal = newCBus1Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -447,10 +383,7 @@ internal static class Changes {
                 case "CBUS_Signals/C2": {
                         var newCBus2Signal = ParseCBus4FTXSeriesSignal(value);
                         if (deviceXSeries != null) {
-                            if (deviceXSeries.CBus2Signal != newCBus2Signal) {
-                                deviceXSeries.CBus2Signal = newCBus2Signal;
-                                hasModified = true;
-                            }
+                            deviceXSeries.CBus2Signal = newCBus2Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -460,10 +393,7 @@ internal static class Changes {
                 case "CBUS_Signals/C3": {
                         var newCBus3Signal = ParseCBus4FTXSeriesSignal(value);
                         if (deviceXSeries != null) {
-                            if (deviceXSeries.CBus3Signal != newCBus3Signal) {
-                                deviceXSeries.CBus3Signal = newCBus3Signal;
-                                hasModified = true;
-                            }
+                            deviceXSeries.CBus3Signal = newCBus3Signal;
                         } else {
                             Output.WriteWarningLine($"  Cannot set {name}: {value}");
                         }
@@ -473,10 +403,7 @@ internal static class Changes {
                 case "Battery_Charge_Detect/Enable":
                     var newBatteryChargeEnable = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.BatteryChargeEnable != newBatteryChargeEnable) {
-                            deviceXSeries.BatteryChargeEnable = newBatteryChargeEnable;
-                            hasModified = true;
-                        }
+                        deviceXSeries.BatteryChargeEnable = newBatteryChargeEnable;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -485,10 +412,7 @@ internal static class Changes {
                 case "Battery_Charge_Detect/Power_Enable":
                     var newForcePowerEnable = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.ForcePowerEnable != newForcePowerEnable) {
-                            deviceXSeries.ForcePowerEnable = newForcePowerEnable;
-                            hasModified = true;
-                        }
+                        deviceXSeries.ForcePowerEnable = newForcePowerEnable;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -497,10 +421,7 @@ internal static class Changes {
                 case "Battery_Charge_Detect/Deactivate_Sleep":
                     var newDeactivateSleep = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.DeactivateSleep != newDeactivateSleep) {
-                            deviceXSeries.DeactivateSleep = newDeactivateSleep;
-                            hasModified = true;
-                        }
+                        deviceXSeries.DeactivateSleep = newDeactivateSleep;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -509,10 +430,7 @@ internal static class Changes {
                 case "DBUS/SlowSlew":
                     var newDBusSlowSlew = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.DBusSlowSlew != newDBusSlowSlew) {
-                            deviceXSeries.DBusSlowSlew = newDBusSlowSlew;
-                            hasModified = true;
-                        }
+                        deviceXSeries.DBusSlowSlew = newDBusSlowSlew;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -521,10 +439,7 @@ internal static class Changes {
                 case "DBUS/Drive":
                     var newDBusDriveCurrent = int.Parse(value.Replace("mA", ""), NumberStyles.Integer, CultureInfo.InvariantCulture);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.DBusDriveCurrent != newDBusDriveCurrent) {
-                            deviceXSeries.DBusDriveCurrent = newDBusDriveCurrent;
-                            hasModified = true;
-                        }
+                        deviceXSeries.DBusDriveCurrent = newDBusDriveCurrent;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -533,10 +448,7 @@ internal static class Changes {
                 case "DBUS/Schmitt":
                     var newDBusSchmittInput = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.DBusSchmittInput != newDBusSchmittInput) {
-                            deviceXSeries.DBusSchmittInput = newDBusSchmittInput;
-                            hasModified = true;
-                        }
+                        deviceXSeries.DBusSchmittInput = newDBusSchmittInput;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -545,10 +457,7 @@ internal static class Changes {
                 case "CBUS/SlowSlew":
                     var newCBusSlowSlew = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.CBusSlowSlew != newCBusSlowSlew) {
-                            deviceXSeries.CBusSlowSlew = newCBusSlowSlew;
-                            hasModified = true;
-                        }
+                        deviceXSeries.CBusSlowSlew = newCBusSlowSlew;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -557,10 +466,7 @@ internal static class Changes {
                 case "CBUS/Drive":
                     var newCBusDriveCurrent = int.Parse(value.Replace("mA", ""), NumberStyles.Integer, CultureInfo.InvariantCulture);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.CBusDriveCurrent != newCBusDriveCurrent) {
-                            deviceXSeries.CBusDriveCurrent = newCBusDriveCurrent;
-                            hasModified = true;
-                        }
+                        deviceXSeries.CBusDriveCurrent = newCBusDriveCurrent;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -569,10 +475,7 @@ internal static class Changes {
                 case "CBUS/Schmitt":
                     var newCBusSchmittInput = bool.Parse(value);
                     if (deviceXSeries != null) {
-                        if (deviceXSeries.CBusSchmittInput != newCBusSchmittInput) {
-                            deviceXSeries.CBusSchmittInput = newCBusSchmittInput;
-                            hasModified = true;
-                        }
+                        deviceXSeries.CBusSchmittInput = newCBusSchmittInput;
                     } else {
                         Output.WriteWarningLine($"  Cannot set {name}: {value}");
                     }
@@ -582,7 +485,7 @@ internal static class Changes {
             }
         }
 
-        return hasModified;
+        return device.HasEepromChanged;
     }
 
 
