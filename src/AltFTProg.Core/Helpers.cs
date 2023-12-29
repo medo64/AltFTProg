@@ -5,14 +5,6 @@ using System.Text;
 
 internal static class Helpers {
 
-    internal static int CountUnicodeChars(params string[] values) {
-        var byteCount = 0;
-        foreach (var value in values) {
-            byteCount += Encoding.Unicode.GetByteCount(value);
-        }
-        return byteCount;
-    }
-
     internal static byte[] HexStringToByteArray(string hex) {
         var hexFiltered = new StringBuilder();
         foreach (var c in hex) {

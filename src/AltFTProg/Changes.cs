@@ -12,7 +12,12 @@ internal static class Changes {
         var device232R = device as Ftdi232RDevice;
         var deviceXSeries = device as FtdiXSeriesDevice;
 
-        string serialNumberPrefix = "";
+        var newManufacturer = deviceCommon?.Manufacturer ?? "";
+        var newProductDescription = deviceCommon?.ProductDescription ?? "";
+        var newSerialNumber = deviceCommon?.SerialNumber ?? "";
+        var newSerialNumberPrefix = "";
+        var newSerialNumberGenerate = false;
+        var newSerialNumberEnabled = deviceCommon?.SerialNumberEnabled ?? (newSerialNumber.Length > 0);
 
         foreach (var property in properties) {
             var name = property.Key;
@@ -97,59 +102,32 @@ internal static class Changes {
                     break;
 
                 case "USB_String_Descriptors/Manufacturer": {
-                        var newManufacturer = value.Trim();
-                        if (deviceCommon != null) {
-                            deviceCommon.Manufacturer = newManufacturer;
-                        } else {
-                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                        }
+                        newManufacturer = value.Trim();
                     }
                     break;
 
                 case "USB_String_Descriptors/Product_Description": {
-                        var newProductDescription = value.Trim();
-                        if (deviceCommon != null) {
-                            deviceCommon.ProductDescription = newProductDescription;
-                        } else {
-                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                        }
+                        newProductDescription = value.Trim();
                     }
                     break;
 
                 case "USB_String_Descriptors/SerialNumber_Enabled": {
-                        var newSerialNumberEnabled = bool.Parse(value);
-                        if (deviceCommon != null) {
-                            deviceCommon.SerialNumberEnabled = newSerialNumberEnabled;
-                        } else {
-                            Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                        }
+                        newSerialNumberEnabled = bool.Parse(value);
                     }
                     break;
 
                 case "USB_String_Descriptors/SerialNumber": {
-                        var newSerialNumber = value.Trim();
-                        if (newSerialNumber.Length > 0) {
-                            if (deviceCommon != null) {
-                                deviceCommon.SerialNumber = newSerialNumber;
-                            } else {
-                                Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                            }
-                        }
+                        newSerialNumber = value.Trim();
                     }
                     break;
 
                 case "USB_String_Descriptors/SerialNumberPrefix":
-                    serialNumberPrefix = value.Trim();
+                    newSerialNumberPrefix = value.Trim();
                     break;
 
                 case "USB_String_Descriptors/SerialNumber_AutoGenerate": {
                         if (bool.Parse(value)) {
-                            var newGeneratedSerialNumber = FtdiDevice.GetRandomSerialNumber(serialNumberPrefix, 6);
-                            if (deviceCommon != null) {
-                                deviceCommon.SerialNumber = newGeneratedSerialNumber;
-                            } else {
-                                Output.WriteWarningLine($"  Cannot set {name}: {value}");
-                            }
+                            newSerialNumberGenerate = true;
                         }
                     }
                     break;
@@ -483,6 +461,15 @@ internal static class Changes {
 
                 default: Output.WriteWarningLine($"  Unknown property {name}: {value}"); break;
             }
+        }
+
+        if (newSerialNumberGenerate) { newSerialNumber = FtdiDevice.GetRandomSerialNumber(newSerialNumberPrefix, 6); }
+
+        if (deviceCommon != null) {
+            deviceCommon.SetStringDescriptors(newManufacturer, newProductDescription, newSerialNumber);
+            deviceCommon.SerialNumberEnabled = newSerialNumberEnabled && (deviceCommon.SerialNumber.Length > 0);
+        } else {
+            Output.WriteWarningLine($"  Cannot set USB string descriptors");
         }
 
         return device.HasEepromChanged;

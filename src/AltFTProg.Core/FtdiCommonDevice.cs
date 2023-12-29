@@ -291,7 +291,30 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     #endregion Device & Peripheral Control @ 0x0A - 0x0B
 
 
-    #region Manufacturer String Descriptor @ 0x0E - 0x0F
+    #region String Descriptors @ 0x0E - 0x13
+
+    /// <summary>
+    /// Sets string descriptors.
+    /// </summary>
+    /// <param name="manufacturer">Manufacturer name.</param>
+    /// <param name="productDescription">Product description.</param>
+    /// <param name="serialNumber">Serial number.</param>
+    /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
+    public void SetStringDescriptors(string manufacturer, string productDescription, string serialNumber) {
+        if (manufacturer == null) { throw new ArgumentNullException(nameof(manufacturer), "Manufacturer cannot be null."); }
+        if (productDescription == null) { throw new ArgumentNullException(nameof(productDescription), "Product decription cannot be null."); }
+        if (serialNumber == null) { throw new ArgumentNullException(nameof(serialNumber), "Serial number cannot be null."); }
+
+        if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+        if (EepromStrings.GetUnicodeCharacterCount(serialNumber) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(serialNumber), "Serial USB string can be up to 15 characters."); }
+        if (!StringDescriptors.CheckUnicodeCharacterCount(manufacturer, productDescription, serialNumber)) { throw new ArgumentOutOfRangeException(nameof(manufacturer), "Not enough EEPROM space for USB string descriptors."); }
+
+        StringDescriptors.SetEepromStrings(manufacturer, productDescription, serialNumber);
+        SerialNumberEnabled = !string.IsNullOrEmpty(serialNumber);
+        IsChecksumValid = true;  // fixup checksum
+    }
 
     /// <summary>
     /// Gets/sets device manufacturer name.
@@ -302,18 +325,14 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     public string Manufacturer {
         get { return StringDescriptors.Manufacturer; }
         set {
+            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (Helpers.CountUnicodeChars(value, ProductDescription, SerialNumber) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
+            if (!StringDescriptors.CheckUnicodeCharacterCount(value, ProductDescription, SerialNumber)) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
 
             StringDescriptors.Manufacturer = value;
             IsChecksumValid = true;  // fixup checksum
         }
     }
-
-    #endregion Manufacturer String Descriptor @ 0x0E - 0x0F
-
-
-    #region Product String Descriptor @ 0x10 - 0x11
 
     /// <summary>
     /// Gets/sets device product name.
@@ -324,21 +343,18 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     public string ProductDescription {
         get { return StringDescriptors.ProductDescription; }
         set {
+            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (Helpers.CountUnicodeChars(Manufacturer, value, SerialNumber) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
+            if (!StringDescriptors.CheckUnicodeCharacterCount(Manufacturer, value, SerialNumber)) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
 
             StringDescriptors.ProductDescription = value;
             IsChecksumValid = true;  // fixup checksum
         }
     }
 
-    #endregion Product String Descriptor @ 0x10 - 0x11
-
-
-    #region Serial Number String Descriptor @ 0x12 - 0x13
-
     /// <summary>
     /// Gets/sets device serial number.
+    /// It will also enable/disable serial number reporting.
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
@@ -346,16 +362,23 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     public string SerialNumber {
         get { return StringDescriptors.SerialNumber; }
         set {
+            if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (Helpers.CountUnicodeChars(value) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
-            if (Helpers.CountUnicodeChars(Manufacturer, ProductDescription, value) > StringDescriptors.DataLength) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
+            if (EepromStrings.GetUnicodeCharacterCount(value) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
+            if (!StringDescriptors.CheckUnicodeCharacterCount(Manufacturer, ProductDescription, value)) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
 
-            StringDescriptors.SerialNumber = value;
+            if (!string.IsNullOrEmpty(value)) {
+                StringDescriptors.SerialNumber = value;
+                SerialNumberEnabled = true;
+            } else {
+                StringDescriptors.SerialNumber = "";
+                SerialNumberEnabled = false;
+            }
             IsChecksumValid = true;  // fixup checksum
         }
     }
 
-    #endregion Serial Number String Descriptor @ 0x12 - 0x13
+    #endregion String Descriptors @ 0x0E - 0x13
 
 
     /// <summary>
