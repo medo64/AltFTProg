@@ -407,7 +407,7 @@ public abstract class FtdiDevice {
 
                         var eepromExtraSize = nonEmptyBlockCount * 128;
                         var eepromBytes = new byte[eepromExtraSize];
-                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, rawEepromBytes.Length);
+                        Buffer.BlockCopy(rawEepromBytes, 0, eepromBytes, 0, Math.Min(eepromBytes.Length, rawEepromBytes.Length));
 
                         var type = (FtdiDeviceType)((rawEepromBytes[7] << 8) | rawEepromBytes[6]);
                         var eepromSize = eepromExtraSize;
