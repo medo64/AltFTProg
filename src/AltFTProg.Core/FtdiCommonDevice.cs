@@ -300,7 +300,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// <param name="productDescription">Product description.</param>
     /// <param name="serialNumber">Serial number.</param>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 16 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public void SetStringDescriptors(string manufacturer, string productDescription, string serialNumber) {
         if (manufacturer == null) { throw new ArgumentNullException(nameof(manufacturer), "Manufacturer cannot be null."); }
@@ -308,7 +308,7 @@ public abstract class FtdiCommonDevice : FtdiDevice {
         if (serialNumber == null) { throw new ArgumentNullException(nameof(serialNumber), "Serial number cannot be null."); }
 
         if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-        if (EepromStrings.GetUnicodeCharacterCount(serialNumber) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(serialNumber), "Serial USB string can be up to 15 characters."); }
+        if (EepromStrings.GetUnicodeCharacterCount(serialNumber) > 16 * 2) { throw new ArgumentOutOfRangeException(nameof(serialNumber), "Serial USB string can be up to 15 characters."); }
         if (!StringDescriptors.CheckUnicodeCharacterCount(manufacturer, productDescription, serialNumber)) { throw new ArgumentOutOfRangeException(nameof(manufacturer), "Not enough EEPROM space for USB string descriptors."); }
 
         StringDescriptors.SetEepromStrings(manufacturer, productDescription, serialNumber);
@@ -357,14 +357,14 @@ public abstract class FtdiCommonDevice : FtdiDevice {
     /// It will also enable/disable serial number reporting.
     /// </summary>
     /// <exception cref="ArgumentNullException">Value cannot be null.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 15 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Serial USB string can be up to 16 characters. -or- Not enough EEPROM space for USB string descriptors.</exception>
     /// <exception cref="InvalidOperationException">Current checksum is invalid.</exception>
     public string SerialNumber {
         get { return StringDescriptors.SerialNumber; }
         set {
             if (value == null) { throw new ArgumentNullException(nameof(value), "Value cannot be null."); }
             if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
-            if (EepromStrings.GetUnicodeCharacterCount(value) > 15 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
+            if (EepromStrings.GetUnicodeCharacterCount(value) > 16 * 2) { throw new ArgumentOutOfRangeException(nameof(value), "Serial USB string can be up to 15 characters."); }
             if (!StringDescriptors.CheckUnicodeCharacterCount(Manufacturer, ProductDescription, value)) { throw new ArgumentOutOfRangeException(nameof(value), "Not enough EEPROM space for USB string descriptors."); }
 
             if (!string.IsNullOrEmpty(value)) {
