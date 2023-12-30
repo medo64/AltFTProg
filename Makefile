@@ -38,6 +38,7 @@ package: clean release
 	$(if $(findstring 0,$(HAS_LINTIAN)),,$(warning No 'lintian' in path, consider installing 'lintian' package))
 	$(if $(findstring 0,$(HAS_UNCOMMITTED)),,$(warning Uncommitted changes present))
 	@mkdir -p dist/
+	@echo
 	@echo "Packaging for $(DEB_BUILD_ARCH)"
 	@$(eval PACKAGE_NAME = $(DIST_NAME)_$(DIST_VERSION)_$(DEB_BUILD_ARCH))
 	@$(eval PACKAGE_DIR = /tmp/$(PACKAGE_NAME)/)
@@ -63,6 +64,7 @@ package: clean release
 	@install bin/altftprogui   $(PACKAGE_DIR)/opt/altftprog/
 	@install -m 644 bin/libSkiaSharp.so $(PACKAGE_DIR)/opt/altftprog/
 	@install -m 644 bin/libHarfBuzzSharp.so $(PACKAGE_DIR)/opt/altftprog/
+	@tar -czvf dist/$(PACKAGE_NAME).tar.gz --transform='s|.*/||' --show-transformed-names --absolute-names $(PACKAGE_DIR)/opt/altftprog/*
 	@fakeroot dpkg-deb -Z gzip --build $(PACKAGE_DIR)/ > /dev/null
 	@cp /tmp/$(PACKAGE_NAME).deb dist/
 	@$(RM) -r $(PACKAGE_DIR)/
