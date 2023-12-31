@@ -5,10 +5,12 @@ using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Layout;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using AltFTProg;
 using Avalonia.Media;
 using Avalonia.Input;
+using AltFTProg;
+using System.IO;
 
 public partial class MainWindow : Window {
     public MainWindow() {
@@ -26,10 +28,10 @@ public partial class MainWindow : Window {
         base.OnLoaded(e);
 
         Helpers.SetToolbarIcons(this, mnu,
-                               (imgRefresh,      "Refresh"),
-                               (imgProgram,      "DataProgram"),
+                               (imgRefresh, "Refresh"),
+                               (imgProgram, "DataProgram"),
                                (imgLoadTemplate, "FileOpen"),
-                               (imgApp,          "App"));
+                               (imgApp, "App"));
 
         OnMenuRefresh(this, new RoutedEventArgs());
     }
@@ -45,18 +47,7 @@ public partial class MainWindow : Window {
         if (mnuProgram == null) { return; }
 
         var deviceItem = mnuDevice.SelectedItem as DeviceItem;
-        var isEnabled = (deviceItem != null);
-        var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
-
-        mnuProgram.IsEnabled = isEnabled && hasChanged;
-        mnuLoadTemplate.IsEnabled = isEnabled;
-
-        if (tabMain == null) { return; }
-        var device = deviceItem?.Device;
-        PopulateDevice(tabMain, device, delegate () {
-            var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
-            mnuProgram.IsEnabled = isEnabled && hasChanged;
-        });
+        UpdateDeviceItem(deviceItem);
     }
 
     public void OnMenuRefresh(object sender, RoutedEventArgs e) {
@@ -130,13 +121,42 @@ public partial class MainWindow : Window {
         }
     }
 
-    public void OnMenuLoadTemplate(object sender, RoutedEventArgs e) {
-        //TODO
+    public async void OnMenuLoadTemplate(object sender, RoutedEventArgs e) {
+        if (mnuProgram == null) { return; }
+        var deviceItem = mnuDevice.SelectedItem as DeviceItem;
+        if (deviceItem == null) { return; }
+
+        var device = deviceItem.Device;
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel == null) { return; }
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new FilePickerOpenOptions {
+                Title = "Open XML Template",
+                AllowMultiple = false,
+                FileTypeFilter = new[] {
+                    new FilePickerFileType("FTDI Template XML") {
+                        Patterns = new[] { "*.xml" },
+                        AppleUniformTypeIdentifiers = new[] { "public.xml-text" },
+                        MimeTypes = new[] { "text/xml" }
+                    }
+                }
+            }
+        );
+
+        if (files.Count > 0) {
+            using var stream = await files[0].OpenReadAsync();
+            var template = FtdiXmlTemplate.Load(stream);
+            if (template.DeviceType == device.DeviceType) {
+                template.Apply(device);
+                UpdateDeviceItem(deviceItem);
+            }  // TODO: maybe a dialog to say it doesn't match and to catch potential exceptions
+        }
     }
 
 
     public void OnMenuAppOptionsClick(object sender, RoutedEventArgs e) {
-         OnMenuAppAboutClick(sender, e);
+        OnMenuAppAboutClick(sender, e);
     }
 
     public void OnMenuAppFeedbackClick(object sender, RoutedEventArgs e) {
@@ -153,6 +173,21 @@ public partial class MainWindow : Window {
 
     #endregion Menu
 
+
+    private void UpdateDeviceItem(DeviceItem? deviceItem) {
+        var isEnabled = (deviceItem != null);
+        var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
+
+        mnuProgram.IsEnabled = isEnabled && hasChanged;
+        mnuLoadTemplate.IsEnabled = isEnabled;
+
+        if (tabMain == null) { return; }
+        var device = deviceItem?.Device;
+        PopulateDevice(tabMain, device, delegate () {
+            var hasChanged = (deviceItem?.Device?.HasEepromChanged ?? false);
+            mnuProgram.IsEnabled = isEnabled && hasChanged;
+        });
+    }
 
     private static void PopulateDevice(TabControl tabs, FtdiDevice? device, Action refreshAction) {
         tabs.Items.Clear();
@@ -188,7 +223,7 @@ public partial class MainWindow : Window {
                     }
                 );
             }
-       }
+        }
     }
 
 }
