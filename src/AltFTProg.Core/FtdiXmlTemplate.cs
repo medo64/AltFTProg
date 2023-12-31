@@ -56,7 +56,7 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "USB_Device_Descriptor/idVendor": {
-                        var newVendorId = ushort.Parse(value, NumberStyles.HexNumber);
+                        var newVendorId = ushort.Parse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         if ((deviceCommon != null) && (deviceCommon.VendorId != newVendorId)) {
                             Helpers.WriteDebug($"  VendorId = {newVendorId}");
                             deviceCommon.VendorId = newVendorId;
@@ -65,7 +65,7 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "USB_Device_Descriptor/idProduct": {
-                        var newProductId = ushort.Parse(value, NumberStyles.HexNumber);
+                        var newProductId = ushort.Parse(value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                         if ((deviceCommon != null) && (deviceCommon!.ProductId != newProductId)) {
                             Helpers.WriteDebug($"  VendorId = {newProductId}");
                             deviceCommon.ProductId = newProductId;
@@ -113,7 +113,7 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "USB_Config_Descriptor/MaxPower": {
-                        var newMaxBusPower = int.Parse(value);
+                        var newMaxBusPower = int.Parse(value, CultureInfo.InvariantCulture);
                         if ((deviceCommon != null) && (deviceCommon.MaxBusPower != newMaxBusPower)) {
                             Helpers.WriteDebug($"  MaxBusPower = {newMaxBusPower}");
                             deviceCommon.MaxBusPower = newMaxBusPower;
@@ -147,15 +147,13 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "USB_String_Descriptors/SerialNumber_AutoGenerate": {
-                        if (bool.Parse(value)) {
-                            newSerialNumberGenerate = true;
-                        }
+                        newSerialNumberGenerate = bool.Parse(value);
                     }
                     break;
 
                 case "Hardware_Specific/HighIO": {
                         var newHighCurrentIO = bool.Parse(value);
-                        if ((deviceCommon != null) && (device232R.HighCurrentIO != newHighCurrentIO)) {
+                        if ((device232R != null) && (device232R.HighCurrentIO != newHighCurrentIO)) {
                             Helpers.WriteDebug($"  HighCurrentIO = {newHighCurrentIO}");
                             device232R.HighCurrentIO = newHighCurrentIO;
                         }
@@ -174,7 +172,7 @@ public class FtdiXmlTemplate {
 
                 case "Driver/VCP": {
                         var newVirtualComPortDriver = bool.Parse(value);
-                        if ((deviceCommon != null) && (deviceXSeries.VirtualComPortDriver != newVirtualComPortDriver)) {
+                        if ((deviceXSeries != null) && (deviceXSeries.VirtualComPortDriver != newVirtualComPortDriver)) {
                             Helpers.WriteDebug($"  VirtualComPortDriver = {newVirtualComPortDriver}");
                             deviceXSeries.VirtualComPortDriver = newVirtualComPortDriver;
                         }
@@ -185,7 +183,7 @@ public class FtdiXmlTemplate {
                         var newExternalOscillator = bool.Parse(value);
                         if ((deviceCommon != null) && (deviceCommon.ExternalOscillator != newExternalOscillator)) {
                             Helpers.WriteDebug($"  ExternalOscillator = {newExternalOscillator}");
-                            deviceXSeries.ExternalOscillator = newExternalOscillator;
+                            deviceCommon.ExternalOscillator = newExternalOscillator;
                         }
                     }
                     break;
@@ -196,7 +194,7 @@ public class FtdiXmlTemplate {
 
                 case "Hardware_Specific/RS485_Echo_Suppress": {
                         var newRs485EchoSuppression = bool.Parse(value);
-                        if ((deviceCommon != null) && (deviceXSeries.Rs485EchoSuppression != newRs485EchoSuppression)) {
+                        if ((deviceXSeries != null) && (deviceXSeries.Rs485EchoSuppression != newRs485EchoSuppression)) {
                             Helpers.WriteDebug($"  Rs485EchoSuppression = {newRs485EchoSuppression}");
                             deviceXSeries.Rs485EchoSuppression = newRs485EchoSuppression;
                         }
@@ -397,7 +395,7 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "DBUS/Drive": {
-                        var newDBusDriveCurrent = int.Parse(value.Replace("mA", ""), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        var newDBusDriveCurrent = int.Parse(value.Replace("mA", "", StringComparison.OrdinalIgnoreCase), NumberStyles.Integer, CultureInfo.InvariantCulture);
                         if ((deviceXSeries != null) && (deviceXSeries.DBusDriveCurrent != newDBusDriveCurrent)) {
                             Helpers.WriteDebug($"  DBusDriveCurrent = {newDBusDriveCurrent}");
                             deviceXSeries.DBusDriveCurrent = newDBusDriveCurrent;
@@ -424,7 +422,7 @@ public class FtdiXmlTemplate {
                     break;
 
                 case "CBUS/Drive": {
-                        var newCBusDriveCurrent = int.Parse(value.Replace("mA", ""), NumberStyles.Integer, CultureInfo.InvariantCulture);
+                        var newCBusDriveCurrent = int.Parse(value.Replace("mA", "", StringComparison.OrdinalIgnoreCase), NumberStyles.Integer, CultureInfo.InvariantCulture);
                         if ((deviceXSeries != null) && (deviceXSeries.CBusDriveCurrent != newCBusDriveCurrent)) {
                             Helpers.WriteDebug($"  CBusDriveCurrent = {newCBusDriveCurrent}");
                             deviceXSeries.CBusDriveCurrent = newCBusDriveCurrent;
@@ -448,9 +446,9 @@ public class FtdiXmlTemplate {
         if (newSerialNumberGenerate) { newSerialNumber = FtdiDevice.GetRandomSerialNumber(newSerialNumberPrefix, 6); }
 
         if ((deviceCommon != null)
-            && (!deviceCommon.Manufacturer.Equals(newManufacturer)
-             || !deviceCommon.ProductDescription.Equals(newProductDescription)
-             || !deviceCommon.SerialNumber.Equals(newSerialNumber))) {
+            && (!deviceCommon.Manufacturer.Equals(newManufacturer, StringComparison.Ordinal)
+             || !deviceCommon.ProductDescription.Equals(newProductDescription, StringComparison.Ordinal)
+             || !deviceCommon.SerialNumber.Equals(newSerialNumber, StringComparison.Ordinal))) {
             Helpers.WriteDebug($"  Manufacturer = {newManufacturer}");
             Helpers.WriteDebug($"  ProductDescription = {newProductDescription}");
             Helpers.WriteDebug($"  SerialNumber = {newSerialNumber}");
