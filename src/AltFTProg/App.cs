@@ -57,15 +57,16 @@ internal static class App {
     }
 
     private static void Run(FileInfo? file, bool isVerbose, bool resetEeprom, bool fixChecksum) {
-        XmlSimplified? xml = null;
+        FtdiXmlTemplate? template = null;
         if (file != null) {
-            xml = new XmlSimplified(file);
+            using var stream = file.OpenRead();
+            template = FtdiXmlTemplate.Load(stream);
             if (isVerbose) {
                 Output.WriteLine("Template " + file.FullName);
                 if (isVerbose) {
-                    Output.WriteVerboseLine("  Chip type: " + xml.ChipType);
+                    Output.WriteVerboseLine("  Device type: " + template.DeviceType);
                     Output.WriteVerboseLine("  Properties:");
-                    foreach (var property in xml.Properties) {
+                    foreach (var property in template.Properties) {
                         Output.WriteVerboseLine("    " + property.Key + ": " + property.Value);
                     }
                 }
@@ -90,7 +91,7 @@ internal static class App {
             var shouldResetEeprom = resetEeprom && ((device is Ftdi232RDevice) || (device is FtdiXSeriesDevice));
             if (shouldResetEeprom) { deviceTitle += " ↺"; }
 
-            if ((xml != null) && xml.IsMatchingDevice(device)) { deviceTitle += " ⮜"; }
+            if ((template != null) && (template.DeviceType == device.DeviceType)) { deviceTitle += " ⮜"; }
             Output.WriteLine(deviceTitle);
 
             Output.WriteLine("  USB Vendor ID .......: 0x" + device.UsbVendorId.ToString("X4"));
@@ -121,9 +122,9 @@ internal static class App {
 
             if (isVerbose) { WriteDeviceDetails(device); }
 
-            if ((xml != null) && xml.IsMatchingDevice(device)) {
-                var hasModified = Changes.Apply(device, xml.Properties);
-                if (hasModified) {
+            if ((template != null) && (template.DeviceType == device.DeviceType)) {
+                template.Apply(device);
+                if (device.HasEepromChanged) {
                     device.SaveEeprom();
                     if (isVerbose) { WriteDeviceDetails(device); }
                 }
@@ -422,4 +423,5 @@ internal static class App {
         if (value == null) { return ""; }
         return value.Value ? textIfTrue : textIfFalse;
     }
+
 }

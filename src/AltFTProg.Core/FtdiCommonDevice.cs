@@ -382,6 +382,11 @@ public abstract class FtdiCommonDevice : FtdiDevice {
 
 
     /// <summary>
+    /// Gets/sets if external oscillator will be used.
+    /// </summary>
+    public abstract bool ExternalOscillator { get; set; }
+
+    /// <summary>
     /// Gets/sets if checksum is valid.
     /// If checksum is not valid, it can be made valid by setting the property to true.
     /// </summary>

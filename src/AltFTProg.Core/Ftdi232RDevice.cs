@@ -24,10 +24,15 @@ public sealed class Ftdi232RDevice : FtdiCommonDevice {
     #region Misc Config @ 0x00 - 0x01
 
     /// <summary>
-    /// Gets if external oscillator will be used.
+    /// Gets/sets if external oscillator will be used.
     /// </summary>
-    public bool ExternalOscillator {
+    public override bool ExternalOscillator {
         get { return (EepromBytes[0x00] & 0x02) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0x00] = (byte)((EepromBytes[0x00] & ~0x02) | (value ? 0x02 : 0x00));
+            IsChecksumValid = true;  // fixup checksum
+        }
     }
 
     /// <summary>

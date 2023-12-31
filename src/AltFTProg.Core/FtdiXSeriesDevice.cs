@@ -75,17 +75,27 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
     }
 
     /// <summary>
-    /// Gets if external oscillator will be used.
+    /// Gets/sets if external oscillator will be used.
     /// </summary>
-    public bool ExternalOscillator {
+    public override bool ExternalOscillator {
         get { return (EepromBytes[0x00] & 0x10) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0x00] = (byte)((EepromBytes[0x00] & ~0x10) | (value ? 0x10 : 0x00));
+            IsChecksumValid = true;  // fixup checksum
+        }
     }
 
     /// <summary>
-    /// Gets if external oscillator has feedback resistor enabled.
+    /// Gets/sets if external oscillator has feedback resistor enabled.
     /// </summary>
     public bool ExternalOscillatorFeedbackResistor {
         get { return (EepromBytes[0x00] & 0x20) != 0; }
+        set {
+            if (!IsChecksumValid) { throw new InvalidOperationException("Current checksum is invalid."); }
+            EepromBytes[0x00] = (byte)((EepromBytes[0x00] & ~0x20) | (value ? 0x20 : 0x00));
+            IsChecksumValid = true;  // fixup checksum
+        }
     }
 
     /// <summary>
