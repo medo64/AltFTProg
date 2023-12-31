@@ -312,8 +312,9 @@ public abstract class FtdiCommonDevice : FtdiDevice {
         if (!StringDescriptors.CheckUnicodeCharacterCount(manufacturer, productDescription, serialNumber)) { throw new ArgumentOutOfRangeException(nameof(manufacturer), "Not enough EEPROM space for USB string descriptors."); }
 
         StringDescriptors.SetEepromStrings(manufacturer, productDescription, serialNumber);
-        SerialNumberEnabled = !string.IsNullOrEmpty(serialNumber);
         IsChecksumValid = true;  // fixup checksum
+
+        SerialNumberEnabled = !string.IsNullOrEmpty(serialNumber);
     }
 
     /// <summary>
