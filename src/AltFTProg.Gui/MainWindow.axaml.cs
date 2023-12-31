@@ -168,7 +168,7 @@ public partial class MainWindow : Window {
     }
 
     public void OnMenuAppAboutClick(object sender, RoutedEventArgs e) {
-        Medo.Avalonia.AboutBox.ShowDialog(this, new Uri("https://medo64.com/altftprog/"));
+        Medo.Avalonia.AboutBox.ShowDialog(this);  // no website url as we cannot start firefox from root context
     }
 
     #endregion Menu
