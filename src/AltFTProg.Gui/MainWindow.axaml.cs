@@ -1,6 +1,8 @@
 namespace AltFTProgGui;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Threading;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -10,7 +12,6 @@ using Avalonia.Threading;
 using Avalonia.Media;
 using Avalonia.Input;
 using AltFTProg;
-using System.IO;
 
 public partial class MainWindow : Window {
     public MainWindow() {
@@ -160,7 +161,7 @@ public partial class MainWindow : Window {
     }
 
     public void OnMenuAppFeedbackClick(object sender, RoutedEventArgs e) {
-        //TODO
+        Medo.Avalonia.FeedbackBox.ShowDialog(this, new Uri("https://medo64.com/feedback/"));
     }
 
     public void OnMenuAppUpgradeClick(object sender, RoutedEventArgs e) {

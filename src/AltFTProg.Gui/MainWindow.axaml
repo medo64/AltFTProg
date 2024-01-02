@@ -92,9 +92,9 @@
                             <MenuItem Header="▼" Classes="DropDown">
                                 <MenuItem Header="Options…" Click="OnMenuAppOptionsClick" IsVisible="false" />
                                 <MenuItem Header="-" IsVisible="false" />
-                                <MenuItem Header="Send Feedback…" Click="OnMenuAppFeedbackClick" IsVisible="false" />
+                                <MenuItem Header="Send Feedback…" Click="OnMenuAppFeedbackClick" />
                                 <MenuItem Header="Check for Upgrade…" Click="OnMenuAppUpgradeClick" IsVisible="false" />
-                                <MenuItem Header="-" IsVisible="false" />
+                                <MenuItem Header="-" />
                                 <MenuItem Header="About…" Click="OnMenuAppAboutClick" />
                             </MenuItem>
                         </Menu>
