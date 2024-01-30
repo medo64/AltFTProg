@@ -271,33 +271,33 @@ public sealed class FtdiXSeriesDevice : FtdiCommonDevice {
     public void ResetEepromToDefaults() {
         var defaultEepromHex =
         @"
-            01 00 03 04 15 60 00 10  80 32 08 00 44 00 A0 0A
-            AA 32 DC 12 00 00 00 00  00 00 00 00 00 00 00 00
+            80 00 03 04 15 60 00 10  80 2D 08 00 00 00 A0 0A
+            AA 24 D4 12 00 00 00 00  00 00 09 01 02 05 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
             00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
-            2E 36 D1 C9 01 00 4B 82  AF A0 40 00 00 00 00 00
-            00 00 00 00 44 41 58 4D  53 31 32 35 00 00 00 00
-            0A 03 46 00 54 00 44 00  49 00 32 03 55 00 53 00
-            42 00 20 00 3C 00 2D 00  3E 00 20 00 53 00 65 00
-            72 00 69 00 61 00 6C 00  20 00 43 00 6F 00 6E 00
-            76 00 65 00 72 00 74 00  65 00 72 00 12 03 46 00
-            54 00 38 00 43 00 58 00  57 00 34 00 55 00 00 00
-            00 00 00 00 00 00 00 00  00 00 00 00 00 00 F8 60
+            2C 36 D3 C9 01 00 0C 57  76 32 40 00 00 00 00 00
+            00 00 00 00 44 33 57 51  58 47 51 39 00 00 00 00
+            0A 03 46 00 54 00 44 00  49 00 24 03 46 00 54 00
+            32 00 33 00 30 00 58 00  20 00 42 00 61 00 73 00
+            69 00 63 00 20 00 55 00  41 00 52 00 54 00 00 00
+            00 00 00 00 12 03 44 00  33 00 30 00 49 00 4E 00
+            46 00 49 00 37 00 00 00  00 00 00 00 00 00 00 00
+            00 00 00 00 00 00 00 00  00 00 00 00 00 00 18 2E
         ";
         var defaultEepromBytes = Helpers.HexStringToByteArray(defaultEepromHex);
         Buffer.BlockCopy(defaultEepromBytes, 0, EepromBytes, 0, defaultEepromBytes.Length);
 
         // serial
-        var digitCount = 6;
+        var digitCount = 8;
         var rndBytes = RandomNumberGenerator.GetBytes(digitCount);
         for (var i = 0; i < digitCount; i++) {
             var number = rndBytes[i] % 32;
             var ch = (number < 26) ? (char)('A' + number) : (char)('2' + (number - 26));
-            EepromBytes[0xE2 + i * 2] = (byte)ch;
+            EepromBytes[0xD6 + i * 2] = (byte)ch;
         }
 
         IsChecksumValid = true;  // fixup checksum
